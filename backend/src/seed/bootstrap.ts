@@ -15,23 +15,42 @@ const R = (...keys: string[]) => keys.flatMap((k) => [`${k}:read`, `${k}:write`,
 export const SYSTEM_ROLES: { key: string; name: string; description: string; permissions: string[] }[] = [
   { key: 'admin', name: 'Platform administrator', description: 'Full access including configuration and restricted records', permissions: ['*'] },
   { key: 'executive', name: 'Executive / Sponsor', description: 'Read everything, decide approvals within authority', permissions: ['*:read', 'approvals:decide', 'ai:use'] },
-  { key: 'pmo_manager', name: 'PMO manager', description: 'Governance, gates, RAID and reporting across the portfolio', permissions: ['*:read', ...R('projects', 'programmes', 'milestones', 'deliverables', 'risks', 'issues', 'assumptions', 'dependencies', 'change_requests', 'impact_assessments', 'documents', 'decisions', 'meetings', 'work_items', 'requirements'), 'approvals:decide', 'workflow:override', 'audit:read', 'ai:use'] },
-  { key: 'portfolio_manager', name: 'Portfolio manager', description: 'Strategy, portfolios, investment and benefits', permissions: ['*:read', ...R('portfolios', 'programmes', 'objectives', 'key_results', 'business_capabilities', 'benefits', 'business_cases', 'budgets', 'decisions', 'projects'), 'approvals:decide', 'ai:use'] },
-  { key: 'project_manager', name: 'Project manager', description: 'Plans and runs projects', permissions: ['*:read', ...R('projects', 'milestones', 'deliverables', 'work_items', 'risks', 'issues', 'assumptions', 'dependencies', 'change_requests', 'impact_assessments', 'requirements', 'resource_allocations', 'documents', 'meetings', 'decisions', 'cost_entries', 'budgets', 'benefits', 'purchase_requests', 'test_plans', 'business_cases'), 'approvals:decide', 'ai:use'] },
-  { key: 'product_manager', name: 'Product manager', description: 'Owns products across their lifecycle', permissions: ['*:read', ...R('products', 'product_versions', 'ideas', 'feedback', 'experiments', 'roadmap_items', 'requirements', 'releases', 'benefits', 'business_cases', 'work_items', 'risks', 'issues', 'change_requests', 'documents', 'key_results'), 'approvals:decide', 'ai:use'] },
+  { key: 'pmo_manager', name: 'PMO manager', description: 'Governance, gates, RAID and reporting across the portfolio', permissions: ['*:read', ...R('projects', 'programmes', 'milestones', 'deliverables', 'risks', 'issues', 'assumptions', 'dependencies', 'change_requests', 'impact_assessments', 'documents', 'decisions', 'meetings', 'work_items', 'requirements', 'stakeholders', 'policies'), 'approvals:decide', 'workflow:override', 'audit:read', 'ai:use'] },
+  { key: 'portfolio_manager', name: 'Portfolio manager', description: 'Strategy, portfolios, investment and benefits', permissions: ['*:read', ...R('portfolios', 'programmes', 'objectives', 'key_results', 'business_capabilities', 'benefits', 'business_cases', 'budgets', 'decisions', 'projects', 'investment_scenarios', 'scenario_items'), 'approvals:decide', 'ai:use'] },
+  { key: 'project_manager', name: 'Project manager', description: 'Plans and runs projects', permissions: ['*:read', ...R('projects', 'milestones', 'deliverables', 'work_items', 'risks', 'issues', 'assumptions', 'dependencies', 'change_requests', 'impact_assessments', 'requirements', 'resource_allocations', 'documents', 'meetings', 'decisions', 'cost_entries', 'budgets', 'benefits', 'purchase_requests', 'test_plans', 'business_cases', 'stakeholders', 'skill_requirements', 'tenders'), 'approvals:decide', 'ai:use'] },
+  { key: 'product_manager', name: 'Product manager', description: 'Owns products across their lifecycle', permissions: ['*:read', ...R('products', 'product_versions', 'ideas', 'feedback', 'experiments', 'roadmap_items', 'requirements', 'releases', 'benefits', 'business_cases', 'work_items', 'risks', 'issues', 'change_requests', 'documents', 'key_results', 'stakeholders'), 'approvals:decide', 'ai:use'] },
   { key: 'business_analyst', name: 'Business analyst', description: 'Requirements, processes and impact analysis', permissions: ['*:read', ...R('requirements', 'business_processes', 'process_steps', 'impact_assessments', 'documents', 'test_cases', 'work_items', 'feedback'), 'approvals:decide', 'ai:use'] },
-  { key: 'bc_manager', name: 'Business continuity manager', description: 'BIA, recovery strategies and resilience', permissions: ['*:read', ...R('bia_assessments', 'recovery_strategies', 'services', 'business_processes', 'process_steps', 'impact_assessments', 'risks', 'applications'), 'approvals:decide', 'ai:use'] },
+  { key: 'bc_manager', name: 'Business continuity manager', description: 'BIA, recovery strategies and resilience', permissions: ['*:read', ...R('bia_assessments', 'recovery_strategies', 'services', 'business_processes', 'process_steps', 'impact_assessments', 'risks', 'applications', 'bc_exercises'), 'approvals:decide', 'ai:use'] },
   { key: 'finance_controller', name: 'Finance controller', description: 'Budgets, actuals and financial approvals', permissions: ['*:read', ...R('budgets', 'cost_entries', 'business_cases', 'benefits', 'invoices', 'impact_assessments'), 'approvals:decide', 'ai:use'] },
-  { key: 'resource_manager', name: 'Resource manager', description: 'Capacity and allocations', permissions: ['*:read', ...R('resource_allocations', 'availability', 'skills', 'teams'), 'ai:use'] },
+  { key: 'resource_manager', name: 'Resource manager', description: 'Capacity and allocations', permissions: ['*:read', ...R('resource_allocations', 'availability', 'skills', 'teams', 'skill_requirements'), 'ai:use'] },
   { key: 'tester', name: 'Tester', description: 'Test design and execution', permissions: ['projects:read', 'products:read', 'releases:read', 'requirements:read', 'work_items:read', 'users:read', ...R('test_plans', 'test_cases', 'test_executions', 'defects'), 'ai:use'] },
   { key: 'release_manager', name: 'Release manager', description: 'Releases, deployments and environments', permissions: ['*:read', ...R('releases', 'deployments', 'environments'), 'releases:deploy', 'approvals:decide', 'ai:use'] },
   { key: 'operations', name: 'Operations / service owner', description: 'Operational work, services and acceptance', permissions: ['*:read', ...R('work_items', 'services', 'environments', 'deployments', 'impact_assessments', 'applications'), 'approvals:decide', 'ai:use'] },
-  { key: 'security_officer', name: 'Security officer', description: 'Security & privacy risk and controls', permissions: ['*:read', ...R('risks', 'controls', 'obligations', 'impact_assessments', 'audit_findings'), 'approvals:decide', 'audit:read', 'ai:use'] },
-  { key: 'procurement', name: 'Procurement officer', description: 'Vendors, contracts and purchasing', permissions: ['*:read', ...R('vendors', 'contracts', 'purchase_requests', 'invoices', 'impact_assessments'), 'approvals:decide', 'ai:use'] },
+  { key: 'security_officer', name: 'Security officer', description: 'Security & privacy risk and controls', permissions: ['*:read', ...R('risks', 'controls', 'obligations', 'impact_assessments', 'audit_findings', 'policies'), 'approvals:decide', 'audit:read', 'ai:use'] },
+  { key: 'procurement', name: 'Procurement officer', description: 'Vendors, contracts and purchasing', permissions: ['*:read', ...R('vendors', 'contracts', 'purchase_requests', 'invoices', 'impact_assessments', 'tenders', 'tender_bids', 'vendor_reviews'), 'approvals:decide', 'ai:use'] },
   { key: 'cab', name: 'Change advisory board', description: 'Approves releases and IT changes', permissions: ['*:read', 'approvals:decide', 'ai:use'] },
   { key: 'auditor', name: 'Auditor (read-only)', description: 'Read-only access including audit trail', permissions: ['*:read', 'audit:read'] },
   { key: 'member', name: 'Team member', description: 'Works on assigned items', permissions: ['projects:read', 'products:read', 'programmes:read', 'portfolios:read', 'users:read', 'teams:read', 'milestones:read', 'documents:read', 'requirements:read', ...R('work_items'), 'ai:use'] },
 ];
+
+/** Migration-003 (FRS v1.1) permissions merged into the system roles. Sensitive decisions use explicit verbs (…:approve, finance:lock). */
+const FRS_EXTRA: Record<string, string[]> = {
+  pmo_manager: [...R('requests', 'scoring_models', 'sprints', 'raci_assignments', 'communications', 'announcements', 'quality_reviews', 'non_conformances', 'ocm_impacts', 'readiness_assessments', 'training_activities', 'lessons', 'tech_debt_items'), 'requests:approve', 'documents:admin'],
+  portfolio_manager: [...R('requests', 'scoring_models', 'lessons'), 'requests:approve'],
+  executive: ['requests:approve'],
+  project_manager: [...R('requests', 'sprints', 'time_entries', 'raci_assignments', 'communications', 'announcements', 'quality_reviews', 'non_conformances', 'ocm_impacts', 'readiness_assessments', 'training_activities', 'lessons', 'contract_milestones', 'cutover_steps', 'tech_debt_items'), 'time_entries:approve', 'contract_milestones:approve'],
+  product_manager: [...R('requests', 'sprints', 'product_roles', 'personas', 'hypotheses', 'launch_plans', 'product_metrics', 'pricing_plans', 'tech_debt_items', 'lessons', 'quality_reviews', 'non_conformances', 'ocm_impacts', 'readiness_assessments', 'training_activities', 'communications', 'announcements', 'raci_assignments', 'configuration_items'), 'releases:approve'],
+  business_analyst: [...R('requests', 'raci_assignments', 'ocm_impacts', 'readiness_assessments', 'lessons')],
+  bc_manager: [...R('lessons')],
+  finance_controller: ['finance:lock', ...R('contract_milestones')],
+  resource_manager: [...R('time_entries', 'raci_assignments'), 'time_entries:approve', 'approvals:decide'],
+  tester: [...R('quality_reviews', 'non_conformances'), 'lessons:read'],
+  release_manager: [...R('cutover_steps', 'configuration_items', 'launch_plans'), 'releases:approve'],
+  operations: [...R('cutover_steps', 'configuration_items', 'tech_debt_items', 'requests'), 'releases:approve'],
+  procurement: [...R('contract_milestones'), 'contract_milestones:approve'],
+  member: ['requests:read', 'requests:write', 'time_entries:read', 'time_entries:write', 'lessons:read', 'announcements:read', 'sprints:read', 'raci_assignments:read', 'communications:read'],
+};
+for (const r of SYSTEM_ROLES) r.permissions.push(...(FRS_EXTRA[r.key] ?? []));
 
 const MATRIX: [string, string, number | null][] = [
   ['finance_controller', 'financial', 250000], ['portfolio_manager', 'financial', 2000000], ['executive', 'financial', null],
@@ -40,6 +59,8 @@ const MATRIX: [string, string, number | null][] = [
   ['pmo_manager', 'risk_acceptance', null], ['executive', 'risk_acceptance', null],
   ['pmo_manager', 'gate', null], ['portfolio_manager', 'gate', null], ['executive', 'gate', null],
   ['cab', 'cab', null], ['pmo_manager', 'document', null], ['bc_manager', 'bia', null],
+  ['product_manager', 'requirement', null], ['project_manager', 'requirement', null], ['business_analyst', 'requirement', null],
+  ['resource_manager', 'resource', null], ['pmo_manager', 'waiver', null], ['product_manager', 'waiver', null],
 ];
 
 const THRESHOLDS: [string, string, number, number][] = [
@@ -58,6 +79,21 @@ export const METRICS: [string, string, string, string, string][] = [
   ['okr_progress', 'Objective progress %', 'Mean of key-result progress, each clamped 0–100; null when no measured KRs', 'objectives, key_results', 'portfolio_manager'],
   ['resource_utilisation', 'Resource utilisation %', 'Σ allocation % in week ÷ available capacity % (leave removes 20% per working day)', 'resource_allocations, availability', 'resource_manager'],
   ['bia_tier', 'BIA criticality tier', 'MTPD = earliest horizon where any impact category severity ≥ tolerance threshold. Tier 1 ≤4h, 2 ≤24h, 3 ≤72h, 4 >72h', 'bia_assessments, bia_impacts', 'bc_manager'],
+  ['scenario_fit', 'Scenario funding & capacity fit', 'Ranked included items funded cumulatively until the funding limit (or portfolio envelope); FTE demand compared with capacity limit (or active headcount). Unpriced items are reported, never assumed free.', 'investment_scenarios, scenario_items, projects', 'portfolio_manager'],
+  ['traceability_coverage', 'Requirement verification coverage', 'Verified = requirement has ≥1 test case and every linked case\'s latest execution passed', 'requirements, work_items, test_cases, test_executions', 'business_analyst'],
+  ['attestation_completion', 'Policy attestation completion', 'Attested users ÷ users in scope (applies_to_roles, empty = all) for the current policy version', 'policies, policy_attestations', 'security_officer'],
+  ['tender_score', 'Tender weighted score', 'Σ (criterion points ÷ 10 × weight); price points = lowest compliant price ÷ bid price × 10; incomplete scoring = null', 'tenders, tender_bids', 'procurement'],
+  ['vendor_review_score', 'Vendor review overall score', 'Mean of quality, delivery, cost and relationship (1–5); null unless all four are scored', 'vendor_reviews', 'procurement'],
+  ['request_score', 'Request / initiative score', 'Σ(weight × normalised criterion value 0–10, inverted when lower is better) ÷ Σ weights × 100; null unless every criterion is scored; overrides need a reason', 'scoring_models, scores', 'portfolio_manager'],
+  ['critical_path', 'Critical path & forecast finish', 'CPM forward/backward pass on working days (weekends + holidays excluded) over FS/SS/FF/SF dependencies with lag; duration = PERT (O+4M+P)/6 when three-point estimates exist', 'work_items, work_dependencies, holidays', 'pmo_manager'],
+  ['weighted_progress', 'Weighted project progress %', 'Σ(weight × completion) ÷ Σ weight; weight = progress_weight or estimate hours; completion = 1 when done else 1 − remaining ÷ estimate. Task counts are never used', 'work_items', 'pmo_manager'],
+  ['sprint_velocity', 'Sprint velocity', 'Story points of items done in completed sprints; average over the last 8 sprints of the team; unestimated items reported separately', 'sprints, work_items', 'project_manager'],
+  ['quality_gate', 'Quality gate', 'Pass when no open non-conformances, no open critical/high defects and no failed reviews; coverage = requirements with ≥1 test case ÷ requirements; leakage = production defects ÷ all defects', 'quality_reviews, non_conformances, defects, test_cases', 'pmo_manager'],
+  ['readiness_index', 'Change readiness index (0–100)', 'Mean of awareness, understanding, willingness, ability, reinforcement (1–5) × 20; null unless all five recorded', 'readiness_assessments', 'pmo_manager'],
+  ['risk_emv', 'Risk expected monetary value', 'EMV = probability % ÷ 100 × cost impact; null when either is missing', 'risks', 'pmo_manager'],
+  ['raci_validity', 'RACI validity', 'Valid when each item has exactly one A and at least one R', 'raci_assignments', 'pmo_manager'],
+  ['product_health', 'Product health', 'Share of active product metrics on target (latest value vs target, direction-aware); green ≥80% with no open high defects or high tech debt, amber ≥50%, red otherwise; unknown when no metric has value and target', 'product_metrics, metric_values, defects, tech_debt_items', 'product_manager'],
+  ['announcement_ack_rate', 'Acknowledgement rate %', 'Acknowledged ÷ audience (users in the audience roles, or all active users) × 100', 'announcements, announcement_acks', 'pmo_manager'],
   ['release_readiness', 'Release readiness', 'All mandatory checks pass: tests linked, thresholds met, UAT signed off, no open critical/high defects, rollback + deployment plans, CAB, business validation, operational acceptance', 'releases, test_*, defects, approvals', 'release_manager'],
 ];
 
@@ -161,7 +197,9 @@ const INTEGRATIONS: [string, string, string, Record<string, string>][] = [
 ];
 
 export async function ensureOrgConfig(c: pg.PoolClient, orgId: string) {
-  for (const r of SYSTEM_ROLES) await c.query(`INSERT INTO roles (org_id, key, name, description, permissions, is_system) VALUES ($1,$2,$3,$4,$5,true) ON CONFLICT (org_id, key) DO NOTHING`, [orgId, r.key, r.name, r.description, r.permissions]);
+  // new default permissions are merged into existing system roles (never removes an administrator's additions)
+  for (const r of SYSTEM_ROLES) await c.query(`INSERT INTO roles (org_id, key, name, description, permissions, is_system) VALUES ($1,$2,$3,$4,$5,true)
+      ON CONFLICT (org_id, key) DO UPDATE SET permissions = (SELECT array_agg(DISTINCT x ORDER BY x) FROM unnest(roles.permissions || EXCLUDED.permissions) x) WHERE roles.is_system`, [orgId, r.key, r.name, r.description, r.permissions]);
   for (const [role, type, max] of MATRIX) await c.query(`INSERT INTO approval_matrix (org_id, role_key, approval_type, max_amount) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`, [orgId, role, type, max]);
   for (const [k, d, g, a] of THRESHOLDS) await c.query(`INSERT INTO rag_thresholds (org_id, metric_key, direction, green_at, amber_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`, [orgId, k, d, g, a]);
   for (const [k, n, f, s, o] of METRICS) await c.query(`INSERT INTO metric_definitions (org_id, key, name, formula, source_data, owner_role) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (org_id, key) DO UPDATE SET name=EXCLUDED.name, formula=EXCLUDED.formula, source_data=EXCLUDED.source_data`, [orgId, k, n, f, s, o]);

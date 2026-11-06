@@ -28,7 +28,8 @@ export async function biaAnalysis(db: Db, ctx: Ctx, biaId: string) {
   const derivedMtpd = deriveMtpd(impacts, b.tolerance_threshold);
   const findings = validateBia(b, deps, strategies);
   const horizons = [...new Set(impacts.map((i: any) => Number(i.horizon_hours)))].sort((a, z) => a - z);
-  const categories = ['financial', 'operational', 'regulatory', 'customer', 'reputational'];
+  // 'environmental' covers climate-related disruption (ISO 22301:2019/Amd 1:2024 climate consideration)
+  const categories = ['financial', 'operational', 'regulatory', 'customer', 'reputational', 'environmental', 'safety', 'data', 'strategic'];
   const matrix = categories.map((c) => ({ category: c, cells: horizons.map((h) => impacts.find((i: any) => i.category === c && Number(i.horizon_hours) === h) ?? null) }));
   return {
     bia: b, impacts, matrix, horizons, dependencies: deps, strategies,

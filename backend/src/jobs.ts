@@ -2,6 +2,7 @@
 import { pool, tx } from './db.js';
 import { notify, usersWithRole } from './core/notify.js';
 import { processQueue } from './integrations/framework.js';
+import { runEscalations } from './domain/frs.js';
 
 async function logged(job: string, fn: () => Promise<unknown>) {
   const run = (await pool.query(`INSERT INTO job_runs (job) VALUES ($1) RETURNING id`, [job])).rows[0].id;
@@ -33,7 +34,10 @@ export async function runDailyChecks() {
     for (const a of (await pool.query(`SELECT id, org_id, code, approver_role FROM approvals WHERE status='pending' AND due_at < now()`)).rows) {
       await notify(pool, a.org_id, await usersWithRole(pool, a.org_id, 'pmo_manager'), { kind: 'approval_escalation', title: `Approval ${a.code} is overdue (${a.approver_role})`, link: '/governance/approvals', dedupe: `esc:${a.id}` }); n++;
     }
-    return { notifications: n };
+    // FRS v1.1 exception alerts & escalations (risks, issues, actions, SLA, emergency changes, finance, product reviews, deferred requests)
+    const escalations: Record<string, unknown> = {};
+    for (const o of (await pool.query(`SELECT id FROM organisations`)).rows) escalations[o.id] = await tx((c) => runEscalations(c, o.id));
+    return { notifications: n, escalations };
   });
 }
 

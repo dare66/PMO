@@ -21,6 +21,12 @@ export const GUARDED_STATUS: Record<string, string[]> = {
   business_cases: ['approved', 'rejected'],
   projects: ['closed'],
   documents: ['approved'],
+  requirements: ['approved'],
+  tenders: ['awarded'],
+  time_entries: ['approved', 'rejected'],
+  contract_milestones: ['accepted'],
+  defects: ['waived', 'known_error'],
+  announcements: ['published'],
 };
 
 function fieldSchema(fd: FieldDef): z.ZodTypeAny {
@@ -235,6 +241,11 @@ export async function deleteRow(ctx: Ctx, key: string, id: string) {
   const def = getResource(key); if (!def) throw notFound('Resource');
   requirePerm(ctx, `${key}:delete`);
   return tx(async (db) => {
+    if (hooks[key]?.beforeDelete) {
+      const cur = (await db.query(`SELECT * FROM ${def.table} WHERE id=$1 AND org_id=$2 AND deleted_at IS NULL FOR UPDATE`, [id, ctx.orgId])).rows[0];
+      if (!cur) throw notFound(def.label);
+      await hooks[key]!.beforeDelete!(db, ctx, cur);
+    }
     const r = await db.query(`UPDATE ${def.table} SET deleted_at=now(), updated_by=$3 WHERE id=$1 AND org_id=$2 AND deleted_at IS NULL RETURNING id, code`, [id, ctx.orgId, ctx.userId]);
     if (!r.rowCount) throw notFound(def.label);
     await audit(db, ctx, 'delete', { type: key, id, code: r.rows[0].code }, null, { deleted_at: new Date().toISOString() });

@@ -28,6 +28,10 @@ import { providerStatus } from './ai/providers.js';
 import { CONNECTORS, enqueue, inbound, processQueue, retryDeadLetter } from './integrations/framework.js';
 import { runDailyChecks } from './jobs.js';
 import { buildOpenApi } from './openapi.js';
+import multipart from '@fastify/multipart';
+import { registerExtendedRoutes } from './routes/extended.js';
+import { registerFrsRoutes } from './routes/frs.js';
+import { completeLogin, oidcConfig, startLogin } from './auth/oidc.js';
 
 const uuid = z.string().uuid();
 const parse = <T extends z.ZodTypeAny>(s: T, v: unknown): z.infer<T> => {
@@ -44,6 +48,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cookie);
   await app.register(jwt, { secret: config.jwtSecret, sign: { expiresIn: `${config.sessionHours}h` } });
   await app.register(rateLimit, { global: true, max: 600, timeWindow: '1 minute' });
+  await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 + 1, files: 1 } });
 
   app.setErrorHandler((err: any, req, reply) => {
     if (err instanceof AppError) return reply.status(err.status).send({ error: err.code, message: err.message, details: err.details });
@@ -69,6 +74,16 @@ export async function buildApp(): Promise<FastifyInstance> {
     const token = app.jwt.sign({ sub: u.id });
     reply.setCookie(SESSION_COOKIE, token, { httpOnly: true, sameSite: 'strict', secure: config.cookieSecure, path: '/', maxAge: config.sessionHours * 3600 });
     return { token, user: { id: u.id, name: u.name, email: u.email } };
+  });
+  // ---- OIDC single sign-on (enabled only when OIDC_* environment variables are set)
+  app.get('/api/auth/sso', async () => { const c = oidcConfig(); return { enabled: !!c, issuer: c?.issuer ?? null }; });
+  app.get('/api/auth/sso/start', async (req, reply) => reply.redirect(await startLogin(String((req.query as any).return_to ?? '/'))));
+  app.get('/api/auth/sso/callback', async (req, reply) => {
+    const q = req.query as any;
+    if (q.error) return reply.redirect(`/?sso_error=${encodeURIComponent(String(q.error))}`);
+    const { user, returnTo } = await completeLogin(String(q.code ?? ''), String(q.state ?? ''), req.ip);
+    reply.setCookie(SESSION_COOKIE, app.jwt.sign({ sub: user.id }), { httpOnly: true, sameSite: 'strict', secure: config.cookieSecure, path: '/', maxAge: config.sessionHours * 3600 });
+    return reply.redirect(returnTo);
   });
   app.post('/api/auth/logout', async (_req, reply) => { reply.clearCookie(SESSION_COOKIE, { path: '/' }); return { ok: true }; });
 
@@ -316,7 +331,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     r.get('/api/bia/:id/analysis', async (req) => { const c = C(req); await getRow(c, 'bia_assessments', (req.params as any).id); return biaAnalysis(pool, c, (req.params as any).id); });
     r.put('/api/bia/:id/impacts', async (req) => {
       const c = C(req); requirePerm(c, 'bia_assessments:write');
-      const item = z.object({ category: z.enum(['financial', 'operational', 'regulatory', 'customer', 'reputational']), horizon_hours: z.number().positive().max(8760), severity: z.number().int().min(0).max(5), financial_amount: z.number().nullable().optional(), rationale: z.string().max(2000).nullable().optional() });
+      const item = z.object({ category: z.enum(['financial', 'operational', 'regulatory', 'customer', 'reputational', 'environmental', 'safety', 'data', 'strategic']), horizon_hours: z.number().positive().max(8760), severity: z.number().int().min(0).max(5), financial_amount: z.number().nullable().optional(), rationale: z.string().max(2000).nullable().optional() });
       const b = parse(z.object({ impacts: z.array(item).max(200) }), req.body);
       await getRow(c, 'bia_assessments', (req.params as any).id);
       await tx((db) => upsertImpacts(db, c, (req.params as any).id, b.impacts));
@@ -471,6 +486,9 @@ export async function buildApp(): Promise<FastifyInstance> {
       });
     });
     r.post('/api/integrations/events/:id/retry', async (req) => { const c = C(req); requirePerm(c, 'integrations:write'); return tx((db) => retryDeadLetter(db, c, (req.params as any).id)); });
+
+    registerExtendedRoutes(r);
+    registerFrsRoutes(r);
 
     // ---------------- administration
     r.get('/api/admin/roles', async (req) => { const c = C(req); requirePerm(c, 'admin:users'); return (await pool.query(`SELECT r.*, (SELECT count(*)::int FROM user_roles ur WHERE ur.role_id=r.id) members FROM roles r WHERE org_id=$1 ORDER BY name`, [c.orgId])).rows; });

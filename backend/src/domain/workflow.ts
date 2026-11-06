@@ -14,6 +14,7 @@ import { nextCode } from '../core/codes.js';
 import { notify, usersWithRole } from '../core/notify.js';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../core/errors.js';
 import { getResource } from '../resources/registry.js';
+import { createBaseline } from './frs.js';
 
 export interface StageDef {
   key: string; name: string; entry?: string[]; exit?: string[]; deliverables?: string[];
@@ -130,7 +131,7 @@ async function userRoleKeys(db: Db, userId: string): Promise<string[]> {
   return (await db.query(`SELECT r.key FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=$1`, [userId])).rows.map((r) => r.key);
 }
 
-const SOD_TYPES = new Set(['financial', 'procurement', 'risk_acceptance', 'change', 'bia']);
+const SOD_TYPES = new Set(['financial', 'procurement', 'risk_acceptance', 'change', 'bia', 'requirement', 'waiver', 'resource']);
 
 export async function decideApproval(db: Db, ctx: Ctx, approvalId: string, decision: 'approved' | 'approved_with_conditions' | 'rejected', note?: string, conditions?: string) {
   if (ctx.actorType !== 'user') throw forbidden('Only a human user can decide approvals. AI and automated actors cannot approve.');
@@ -205,8 +206,26 @@ async function onAllApproved(db: Db, ctx: Ctx, ap: any) {
     case 'business_cases:financial': return set('business_cases', `status='approved'`);
     case 'documents:document': return set('documents', `status='approved'`);
     case 'releases:cab': return set('releases', `cab_status='approved'`);
+    case 'requirements:requirement': return set('requirements', `status='approved'`);
     case 'risks:risk_acceptance': return set('risks', `acceptance_status='approved', treatment='accept', status='monitoring'`);
-    case 'bia_assessments:bia': return set('bia_assessments', `status='approved', approved_by=$2, approved_at=now(), next_review_date=(now() + (review_frequency_months || ' months')::interval)::date`, [ctx.userId]);
+    case 'bia_assessments:bia': {
+      await set('bia_assessments', `status='approved', approved_by=$2, approved_at=now(), next_review_date=(now() + (review_frequency_months || ' months')::interval)::date, review_trigger=NULL`, [ctx.userId]);
+      // FR-BIA-010 / §8.2: immutable approved version history
+      const b = (await db.query(`SELECT * FROM bia_assessments WHERE id=$1`, [ap.entity_id])).rows[0];
+      const impacts = (await db.query(`SELECT category, horizon_hours, severity, financial_amount, rationale FROM bia_impacts WHERE bia_id=$1 ORDER BY category, horizon_hours`, [b.id])).rows;
+      const deps = (await db.query(`SELECT * FROM bia_dependencies WHERE bia_id=$1`, [b.id])).rows;
+      const exists = (await db.query(`SELECT 1 FROM bia_versions WHERE bia_id=$1 AND version=$2`, [b.id, b.version])).rowCount;
+      const v = exists ? (await db.query(`SELECT max(version)+1 AS v FROM bia_versions WHERE bia_id=$1`, [b.id])).rows[0].v : b.version;
+      await db.query(`INSERT INTO bia_versions (org_id, bia_id, version, snapshot, approved_by, approved_at) VALUES ($1,$2,$3,$4,$5,now())`, [ctx.orgId, b.id, v, JSON.stringify({ assessment: b, impacts, dependencies: deps }), ctx.userId]);
+      await db.query(`UPDATE bia_assessments SET version=$2 WHERE id=$1`, [b.id, v]);
+      return;
+    }
+    case 'defects:waiver': {
+      const d = (await db.query(`SELECT waiver_reason FROM defects WHERE id=$1`, [ap.entity_id])).rows[0];
+      const disp = String(d?.waiver_reason ?? '').startsWith('[known_error]') ? 'known_error' : 'waived';
+      return set('defects', `status=$2, waived_by=$3`, [disp, ctx.userId]);
+    }
+    case 'resource_allocations:resource': return set('resource_allocations', `status='active'`);
     case 'change_requests:change': {
       const cr = (await db.query(`SELECT * FROM change_requests WHERE id=$1`, [ap.entity_id])).rows[0];
       await set('change_requests', `status='approved', decision='Approved', decided_at=now()`);
@@ -214,6 +233,14 @@ async function onAllApproved(db: Db, ctx: Ctx, ap: any) {
       if (cr.context_type === 'project' && cr.impact_schedule_days) {
         const p = (await db.query(`UPDATE projects SET end_date = end_date + $2::int WHERE id=$1 AND end_date IS NOT NULL RETURNING id, code, end_date`, [cr.context_id, cr.impact_schedule_days])).rows[0];
         if (p) await audit(db, ctx, 'update', { type: 'projects', id: p.id, code: p.code }, null, { end_date: p.end_date, reason: `Approved ${cr.code}` });
+      }
+      // FR-SCP-005 / FR-CHG-006: an approved change on a baselined project creates a new baseline version.
+      if (cr.context_type === 'project' && (cr.impact_schedule_days || (cr.impact_cost && Number(cr.impact_cost) !== 0))) {
+        const p = (await db.query(`SELECT baseline_version, start_date, end_date, budget_at_completion FROM projects WHERE id=$1`, [cr.context_id])).rows[0];
+        if (p?.baseline_version > 0) {
+          if (cr.impact_cost && Number(cr.impact_cost) !== 0 && p.budget_at_completion !== null) await db.query(`UPDATE projects SET budget_at_completion = budget_at_completion + $2 WHERE id=$1`, [cr.context_id, cr.impact_cost]);
+          await createBaseline(db, ctx, cr.context_id, `Re-baselined by approved ${cr.code}`, cr.id);
+        }
       }
       if (cr.context_type === 'project' && cr.impact_cost && Number(cr.impact_cost) !== 0) {
         const code = await nextCode(db, ctx.orgId, 'CST');
@@ -233,7 +260,7 @@ async function onRejected(db: Db, ctx: Ctx, ap: any, note: string) {
     await db.query(`UPDATE workflow_instances SET state='returned', history=$2 WHERE id=$1`, [wi.id, JSON.stringify(history)]);
     return;
   }
-  const map: Record<string, string> = { budgets: `status='rejected'`, purchase_requests: `status='rejected'`, business_cases: `status='rejected'`, change_requests: `status='rejected', decision=$2, decided_at=now()`, risks: `acceptance_status='rejected'`, releases: `cab_status='rejected'`, bia_assessments: `status='draft'`, documents: `status='draft'` };
+  const map: Record<string, string> = { budgets: `status='rejected'`, purchase_requests: `status='rejected'`, business_cases: `status='rejected'`, change_requests: `status='rejected', decision=$2, decided_at=now()`, risks: `acceptance_status='rejected'`, releases: `cab_status='rejected'`, requirements: `status='draft'`, bia_assessments: `status='draft'`, documents: `status='draft'`, defects: `waiver_reason=NULL`, resource_allocations: `status='requested'` };
   const sql = map[ap.entity_type];
   if (sql) await db.query(`UPDATE ${ap.entity_type} SET ${sql} WHERE id=$1`, sql.includes('$2') ? [ap.entity_id, `Rejected: ${note}`] : [ap.entity_id]);
 }

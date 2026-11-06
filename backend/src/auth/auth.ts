@@ -18,8 +18,8 @@ export function validatePasswordPolicy(p: string): string | null {
 }
 
 export async function loadCtx(userId: string, ip?: string, db: Db = pool): Promise<Ctx | null> {
-  const u = (await db.query(`SELECT id, org_id, name, email, status FROM users WHERE id=$1 AND deleted_at IS NULL`, [userId])).rows[0];
-  if (!u || u.status !== 'active') return null;
+  const u = (await db.query(`SELECT id, org_id, name, email, status, access_end_date < current_date AS expired FROM users WHERE id=$1 AND deleted_at IS NULL`, [userId])).rows[0];
+  if (!u || u.status !== 'active' || u.expired) return null; // FR-RES-011: contractor/temporary access ends automatically
   const roles = (await db.query(`SELECT r.key, r.permissions FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=$1`, [userId])).rows;
   const perms = new Set<string>(roles.flatMap((r) => r.permissions));
   return { userId: u.id, orgId: u.org_id, name: u.name, email: u.email, roles: roles.map((r) => r.key), perms, actorType: 'user', ip };
@@ -29,6 +29,7 @@ export async function login(email: string, password: string, ip?: string) {
   const u = (await pool.query(`SELECT * FROM users WHERE lower(email)=lower($1) AND deleted_at IS NULL`, [email ?? ''])).rows[0];
   const generic = new AppError(401, 'invalid_credentials', 'Invalid email or password');
   if (!u || !u.password_hash || u.is_service_account) { await bcrypt.compare(password ?? '', DUMMY_HASH); throw generic; }
+  if (u.access_end_date && String(u.access_end_date instanceof Date ? u.access_end_date.toISOString() : u.access_end_date).slice(0, 10) < new Date().toISOString().slice(0, 10)) { await bcrypt.compare(password ?? '', DUMMY_HASH); throw generic; }
   if (u.locked_until && new Date(u.locked_until) > new Date()) throw new AppError(423, 'account_locked', 'Account temporarily locked after repeated failed sign-ins. Try again later.');
   const ok = await bcrypt.compare(password ?? '', u.password_hash);
   const sys = { orgId: u.org_id, userId: u.id, actorType: 'user' as const, ip };
