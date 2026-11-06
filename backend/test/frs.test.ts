@@ -182,11 +182,11 @@ describe('Time, resource requests and RACI (FR-RES-004/005/007/008/011)', () => 
   });
   it('only one Accountable per RACI item', async () => {
     const p = byName(projects, 'Mobile App 3.0 Redesign');
-    expect((await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Release plan', context_type: 'project', context_id: p.id, user_id: await uid('pm1'), responsibility: 'A' })).status).toBe(201);
-    expect((await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Release plan', context_type: 'project', context_id: p.id, user_id: await uid('pm2'), responsibility: 'A' })).status).toBe(422);
-    await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Release plan', context_type: 'project', context_id: p.id, user_id: await uid('dev1'), responsibility: 'R' });
+    expect((await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Test RACI item', context_type: 'project', context_id: p.id, user_id: await uid('pm1'), responsibility: 'A' })).status).toBe(201);
+    expect((await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Test RACI item', context_type: 'project', context_id: p.id, user_id: await uid('pm2'), responsibility: 'A' })).status).toBe(422);
+    await api('pm1', 'POST', '/api/r/raci_assignments', { name: 'Test RACI item', context_type: 'project', context_id: p.id, user_id: await uid('dev1'), responsibility: 'R' });
     const m = await api('pm1', 'GET', `/api/raci/project/${p.id}`);
-    expect(m.body.validation.find((v: any) => v.item === 'Release plan').valid).toBe(true);
+    expect(m.body.validation.find((v: any) => v.item === 'Test RACI item').valid).toBe(true);
   });
   it('access ends automatically after the access end date', async () => {
     await pool.query(`UPDATE users SET access_end_date=current_date - 1 WHERE email='dev3@demo.example'`);
@@ -321,5 +321,31 @@ describe('Procurement, communications and product controls (FR-PROC, FR-STK-006,
     expect(up.statusCode).toBe(201); expect(up.json().scan_status).not.toBe('clean');
     const dl = await app.inject({ method: 'GET', url: `/api/files/${up.json().id}/download`, headers: { authorization: `Bearer ${tok}` } });
     expect(dl.statusCode).toBe(403);
+  });
+});
+
+describe('Controlled document generation (FR-DOC-004..007/013/014, FR-BA-009, FR-TST-009, AC-09)', () => {
+  it('generates SOP, process flow, user guide, PMP, BRD/FRS, UAT report and minutes as drafts with sources and missing markers', async () => {
+    const proc = (await find('ba', 'business_processes', {}))[0];
+    const p = byName(projects, 'Mobile App 3.0 Redesign');
+    const tp = (await find('tester', 'test_plans', {}))[0];
+    const mtg = (await find('pmo', 'meetings', {}))[0];
+    const cases: [string, Record<string, string>][] = [
+      ['sop', { record_id: proc.id }], ['process_flow', { record_id: proc.id }], ['user_guide', { record_id: proc.id }],
+      ['project_management_plan', { context_type: 'project', context_id: p.id }], ['requirements_spec', { context_type: 'project', context_id: p.id }],
+      ['uat_report', { record_id: tp.id }], ['meeting_minutes', { record_id: mtg.id }],
+    ];
+    for (const [doc_type, extra] of cases) {
+      const r = await api('pmo', 'POST', '/api/documents/generate', { doc_type, ...extra });
+      expect(r.status, `${doc_type}: ${JSON.stringify(r.body).slice(0, 200)}`).toBe(200);
+      expect(r.body.content).toMatch(/DRAFT – not approved/);
+      expect(r.body.source_refs.length).toBeGreaterThan(0);
+      const d = await api('pmo', 'GET', `/api/r/documents/${r.body.document_id}`);
+      expect(d.body.status).toBe('draft');
+    }
+    const flow = await api('pmo', 'POST', '/api/documents/generate', { doc_type: 'process_flow', record_id: proc.id });
+    expect(flow.body.content).toMatch(/flowchart LR/);
+    const ug = await api('pmo', 'POST', '/api/documents/generate', { doc_type: 'user_guide', record_id: proc.id });
+    expect(ug.body.missing_fields).toContain('Screenshots');
   });
 });

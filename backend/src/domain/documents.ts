@@ -44,6 +44,14 @@ async function loadProject(db: Db, ctx: Ctx, id: string) {
   if (!p) throw notFound('Project');
   return p;
 }
+
+async function loadProcess(db: Db, ctx: Ctx, id?: string) {
+  if (!id) throw badRequest('record_id (business process id) is required');
+  const proc = (await db.query(`SELECT bp.*, u.name AS owner_name FROM business_processes bp LEFT JOIN users u ON u.id=bp.owner_id WHERE bp.id=$1 AND bp.org_id=$2 AND bp.deleted_at IS NULL`, [id, ctx.orgId])).rows[0];
+  if (!proc) throw notFound('Process');
+  const steps = (await db.query(`SELECT * FROM process_steps WHERE process_id=$1 AND deleted_at IS NULL AND status='active' ORDER BY seq`, [id])).rows;
+  return { proc, steps };
+}
 const raid = async (db: Db, type: string, id: string) => ({
   risks: (await db.query(`SELECT r.*, u.name owner_name FROM risks r LEFT JOIN users u ON u.id=r.owner_id WHERE context_type=$1 AND context_id=$2 AND r.deleted_at IS NULL ORDER BY likelihood*impact DESC`, [type, id])).rows,
   issues: (await db.query(`SELECT i.*, u.name owner_name FROM issues i LEFT JOIN users u ON u.id=i.owner_id WHERE context_type=$1 AND context_id=$2 AND i.deleted_at IS NULL ORDER BY created_at`, [type, id])).rows,
@@ -178,6 +186,117 @@ const generators: Record<string, (db: Db, ctx: Ctx, p: { context_type?: string; 
     section(G, 'Support model', r.release.support_model, 'Support model');
     return G;
   },
+
+  // ---------------------------------------------------------------- FRS v1.1 generators (FR-DOC-004..007, FR-BA-009, FR-TST-009, FR-MTG-006, AC-09)
+  async sop(db, ctx, { record_id }) {
+    const { proc, steps } = await loadProcess(db, ctx, record_id);
+    const G = g(`SOP – ${proc.name}`); src(G, 'business_processes', proc);
+    field(G, 'Process', `${proc.code} ${proc.name} (v${proc.version_label}, ${proc.process_state})`); field(G, 'Process owner', proc.owner_name); field(G, 'Criticality', proc.criticality);
+    section(G, 'Purpose', proc.description, 'Process purpose / description');
+    section(G, 'Roles'); table(G, ['Role / lane', 'Steps'], [...new Set(steps.map((x: any) => x.lane ?? 'Unassigned'))].map((l) => [l, steps.filter((x: any) => (x.lane ?? 'Unassigned') === l).map((x: any) => x.seq).join(', ')]));
+    if (steps.some((x: any) => !x.lane)) G.missing.push('Role (lane) for one or more steps');
+    section(G, 'Procedure');
+    if (!steps.length) { G.missing.push('Process steps'); G.md.push('⚠ MISSING – no approved process steps recorded.'); }
+    for (const st of steps) { G.md.push(`${st.seq}. **${st.name}**${st.lane ? ` _(${st.lane})_` : ''}${st.step_type === 'decision' ? ' – decision point' : ''}`); if (st.description) G.md.push(`   ${st.description}`); src(G, 'process_steps', st); }
+    const ctrls = (await db.query(`SELECT code, name, framework, effectiveness FROM controls WHERE org_id=$1 AND deleted_at IS NULL AND (name ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%') LIMIT 10`, [ctx.orgId, proc.name.split(' ')[0]])).rows;
+    section(G, 'Controls & evidence'); table(G, ['Control', 'Framework', 'Effectiveness'], ctrls.map((c: any) => [`${c.code} ${c.name}`, c.framework, c.effectiveness]), 'No linked controls recorded – confirm with the control owner.');
+    section(G, 'Exceptions'); const dec = steps.filter((x: any) => x.step_type === 'decision'); table(G, ['Decision step', 'Guidance'], dec.map((d: any) => [d.name, d.description]), 'No decision/exception paths modelled.');
+    section(G, 'Revision history'); const hist = (await db.query(`SELECT action, occurred_at FROM audit_events WHERE entity_id=$1 ORDER BY id DESC LIMIT 10`, [proc.id])).rows;
+    table(G, ['Change', 'When'], hist.map((h: any) => [h.action, new Date(h.occurred_at).toISOString().slice(0, 10)]));
+    return G;
+  },
+  async process_flow(db, ctx, { record_id }) {
+    const { proc, steps } = await loadProcess(db, ctx, record_id);
+    const G = g(`Process flow – ${proc.name}`); src(G, 'business_processes', proc);
+    field(G, 'Version', proc.version_label); field(G, 'State', proc.process_state);
+    section(G, 'Flow (Mermaid)'); if (!steps.length) { G.missing.push('Process steps'); G.md.push('⚠ MISSING – no process steps.'); return G; }
+    const id = (n: number) => `S${n}`; const label = (t: string) => t.replace(/["[\]{}()<>|]/g, ' ');
+    G.md.push('```mermaid', 'flowchart LR');
+    for (const st of steps) G.md.push(`  ${id(st.seq)}${st.step_type === 'decision' ? `{"${label(st.name)}"}` : st.step_type === 'start' || st.step_type === 'end' ? `(["${label(st.name)}"])` : `["${label(st.name)}"]`}`);
+    for (const [i, st] of steps.entries()) { const nx: number[] = st.next_step_seq?.length ? st.next_step_seq : steps[i + 1] ? [steps[i + 1].seq] : []; for (const n of nx) G.md.push(`  ${id(st.seq)} --> ${id(n)}`); }
+    G.md.push('```', '', `BPMN 2.0 XML export: GET /api/processes/${proc.id}/bpmn`);
+    return G;
+  },
+  async user_guide(db, ctx, { record_id }) {
+    const { proc, steps } = await loadProcess(db, ctx, record_id);
+    const G = g(`User guide – ${proc.name}`); src(G, 'business_processes', proc);
+    section(G, 'Who this guide is for'); const lanes = [...new Set(steps.map((x: any) => x.lane).filter(Boolean))]; G.md.push(lanes.length ? lanes.map((l) => `- ${l}`).join('\n') : '⚠ MISSING – roles (lanes) not modelled.'); if (!lanes.length) G.missing.push('Roles');
+    section(G, 'Prerequisites', proc.description, 'Prerequisites / process context');
+    for (const l of lanes.length ? lanes : ['All users']) {
+      section(G, `Instructions – ${l}`);
+      const mine = steps.filter((x: any) => !lanes.length || x.lane === l);
+      mine.forEach((st: any, i: number) => G.md.push(`${i + 1}. ${st.name}${st.description ? ` – ${st.description}` : ''}`));
+    }
+    section(G, 'Screenshots'); G.md.push('⚠ MISSING – attach screenshots via the document Files panel; they are not generated automatically.'); G.missing.push('Screenshots');
+    section(G, 'Troubleshooting'); const ke = (await db.query(`SELECT code, name, root_cause FROM defects WHERE org_id=$1 AND status='known_error' AND deleted_at IS NULL LIMIT 10`, [ctx.orgId])).rows;
+    table(G, ['Known error', 'Cause / workaround'], ke.map((k: any) => [`${k.code} ${k.name}`, k.root_cause]), 'No known errors recorded.');
+    return G;
+  },
+  async project_management_plan(db, ctx, { context_id }) {
+    const p = await loadProject(db, ctx, context_id!); const G = g(`Project Management Plan – ${p.code} ${p.name}`); src(G, 'projects', p);
+    field(G, 'Sponsor', p.sponsor_name); field(G, 'Project manager', p.owner_name); field(G, 'Delivery approach', p.delivery_approach); field(G, 'Governance tier', p.governance_tier);
+    section(G, 'Scope management', p.scope_statement, 'Scope statement');
+    const bl = (await db.query(`SELECT version, reason, created_at FROM project_baselines WHERE project_id=$1 ORDER BY version`, [p.id])).rows;
+    section(G, 'Schedule management'); field(G, 'Baseline start', p.baseline_start); field(G, 'Baseline finish', p.baseline_end); field(G, 'Current forecast finish', p.end_date);
+    table(G, ['Baseline version', 'Reason', 'Date'], bl.map((b: any) => [b.version, b.reason, new Date(b.created_at).toISOString().slice(0, 10)]), 'No baseline set – baselines are required before execution.'); if (!bl.length) G.missing.push('Approved baseline');
+    const ms = (await db.query(`SELECT code, name, due_date, baseline_date, is_gate, status FROM milestones WHERE project_id=$1 AND deleted_at IS NULL ORDER BY due_date`, [p.id])).rows;
+    table(G, ['Milestone', 'Due', 'Baseline', 'Gate', 'Status'], ms.map((m: any) => [`${m.code} ${m.name}`, m.due_date, m.baseline_date, m.is_gate ? 'Yes' : 'No', m.status]));
+    section(G, 'Cost management'); field(G, 'Budget at completion', money(p.budget_at_completion, p.currency));
+    const fs = await financeSummary(db, ctx, 'project', p.id); G.md.push(`- Approved budget: ${money(fs.approved_budget) ?? '—'}; actuals: ${money(fs.actual) ?? '—'}; commitments: ${money(fs.commitments) ?? '—'}`);
+    section(G, 'Quality management'); const qr = (await db.query(`SELECT code, name, review_type, scheduled_on, result FROM quality_reviews WHERE context_type='project' AND context_id=$1 AND deleted_at IS NULL ORDER BY scheduled_on`, [p.id])).rows;
+    table(G, ['Review', 'Type', 'Scheduled', 'Result'], qr.map((q: any) => [`${q.code} ${q.name}`, q.review_type, q.scheduled_on, q.result]), 'No quality reviews planned.'); if (!qr.length) G.missing.push('Quality assurance activities');
+    section(G, 'Responsibilities (RACI)'); const raci = (await db.query(`SELECT ra.name, ra.responsibility, u.name person FROM raci_assignments ra JOIN users u ON u.id=ra.user_id WHERE ra.context_type='project' AND ra.context_id=$1 AND ra.deleted_at IS NULL ORDER BY ra.name, ra.responsibility`, [p.id])).rows;
+    table(G, ['Item', 'R/A/C/I', 'Person'], raci.map((r: any) => [r.name, r.responsibility, r.person]), 'No RACI recorded.'); if (!raci.length) G.missing.push('RACI');
+    section(G, 'Communications'); const com = (await db.query(`SELECT name, audience, channel, frequency FROM communications WHERE context_type='project' AND context_id=$1 AND deleted_at IS NULL`, [p.id])).rows;
+    table(G, ['Communication', 'Audience', 'Channel', 'Frequency'], com.map((x: any) => [x.name, x.audience, x.channel, x.frequency]), 'No communication plan recorded.'); if (!com.length) G.missing.push('Communication plan');
+    const R = await raid(db, 'project', p.id);
+    section(G, 'Risk management'); G.md.push(`${R.risks.length} risk(s) recorded; ${R.risks.filter((r: any) => riskScore(r.likelihood, r.impact)! >= 12).length} high or critical. See RAID report for detail.`);
+    section(G, 'Change control'); G.md.push('Baselined scope, schedule and budget change only through approved change requests (impact-assessed, authority-routed). An approved change on a baselined project creates a new baseline version automatically.');
+    return G;
+  },
+  async requirements_spec(db, ctx, { context_type, context_id }) {
+    if (!context_type || !context_id || !['project', 'product'].includes(context_type)) throw badRequest('requirements_spec requires context_type project|product and context_id');
+    const ctxRow = (await db.query(`SELECT id, code, name FROM ${context_type === 'project' ? 'projects' : 'products'} WHERE id=$1 AND org_id=$2`, [context_id, ctx.orgId])).rows[0]; if (!ctxRow) throw notFound('Context');
+    const G = g(`Requirements Specification (BRD/FRS) – ${ctxRow.code} ${ctxRow.name}`); src(G, context_type === 'project' ? 'projects' : 'products', ctxRow);
+    const reqs = (await db.query(`SELECT r.*, o.code AS objective_code, (SELECT string_agg(tc.code || ':' || COALESCE((SELECT te.result FROM test_executions te WHERE te.test_case_id=tc.id AND te.deleted_at IS NULL ORDER BY executed_at DESC LIMIT 1),'not_run'), ' ') FROM test_cases tc WHERE tc.requirement_id=r.id AND tc.deleted_at IS NULL) AS tests
+      FROM requirements r LEFT JOIN objectives o ON o.id=r.objective_id WHERE r.context_type=$1 AND r.context_id=$2 AND r.deleted_at IS NULL AND r.classification <> 'restricted' ORDER BY r.req_type, r.code`, [context_type, context_id])).rows;
+    if (!reqs.length) { G.missing.push('Requirements'); G.md.push('⚠ MISSING – no requirements recorded.'); return G; }
+    for (const t of ['business', 'functional', 'non_functional', 'regulatory', 'bc_dr']) {
+      const rs = reqs.filter((r: any) => r.req_type === t); if (!rs.length) continue;
+      section(G, `${t.replace('_', '-').replace(/^./, (c) => c.toUpperCase())} requirements`);
+      for (const r of rs) { src(G, 'requirements', r); G.md.push(`### ${r.code} ${r.name}`, `- Priority: ${r.priority} · Status: ${r.status} · Version: ${r.version ?? 1}${r.origin === 'ai' ? ' · Origin: AI draft (human-accepted)' : ''}`, r.description ? r.description : '', `- **Acceptance criteria:** ${r.acceptance_criteria ?? '⚠ MISSING'}`); if (!r.acceptance_criteria) G.missing.push(`${r.code} acceptance criteria`); G.md.push(''); }
+    }
+    section(G, 'Requirements traceability matrix'); table(G, ['Requirement', 'Objective', 'Tests (last result)', 'Status'], reqs.map((r: any) => [r.code, r.objective_code, r.tests, r.status]));
+    return G;
+  },
+  async uat_report(db, ctx, { record_id }) {
+    if (!record_id) throw badRequest('record_id (test plan id) is required');
+    const tp = (await db.query(`SELECT tp.*, u.name AS business_owner FROM test_plans tp LEFT JOIN users u ON u.id=tp.business_owner_id WHERE tp.id=$1 AND tp.org_id=$2 AND tp.deleted_at IS NULL`, [record_id, ctx.orgId])).rows[0]; if (!tp) throw notFound('Test plan');
+    const G = g(`${tp.test_level === 'uat' ? 'UAT' : 'Test completion'} report – ${tp.code} ${tp.name}`); src(G, 'test_plans', tp);
+    field(G, 'Test level', tp.test_level); field(G, 'Business owner', tp.business_owner); field(G, 'Pass threshold', `${tp.pass_threshold_pct}%`); field(G, 'Plan status', tp.status);
+    section(G, 'Entry criteria', tp.entry_criteria, 'Entry criteria'); section(G, 'Exit criteria', tp.exit_criteria, 'Exit criteria');
+    const cases = (await db.query(`SELECT tc.code, tc.name, r.code AS req, (SELECT row_to_json(x) FROM (SELECT te.result, te.executed_at, te.build_version, te.evidence_ref, u.name AS tester FROM test_executions te LEFT JOIN users u ON u.id=te.executed_by WHERE te.test_case_id=tc.id AND te.deleted_at IS NULL ORDER BY te.executed_at DESC LIMIT 1) x) AS last
+      FROM test_cases tc LEFT JOIN requirements r ON r.id=tc.requirement_id WHERE tc.test_plan_id=$1 AND tc.deleted_at IS NULL ORDER BY tc.code`, [tp.id])).rows;
+    const run = cases.filter((c: any) => c.last && c.last.result !== 'not_run'); const passed = run.filter((c: any) => c.last.result === 'passed').length;
+    section(G, 'Summary'); G.md.push(cases.length ? `${cases.length} case(s); ${run.length} executed; ${passed} passed; pass rate ${run.length ? Math.round((passed / cases.length) * 1000) / 10 + '%' : 'not available (no executions)'} of all cases.` : '⚠ MISSING – no test cases.'); if (!cases.length) G.missing.push('Test cases');
+    table(G, ['Case', 'Requirement', 'Result', 'Tester', 'Build', 'Evidence'], cases.map((c: any) => [`${c.code} ${c.name}`, c.req, c.last?.result ?? 'not run', c.last?.tester, c.last?.build_version, c.last?.evidence_ref]));
+    const defs = (await db.query(`SELECT code, name, severity, status FROM defects WHERE ((context_type=$1 AND context_id=$2) OR release_id IS NOT DISTINCT FROM $3) AND deleted_at IS NULL AND status NOT IN ('closed') ORDER BY severity`, [tp.context_type, tp.context_id, tp.release_id])).rows;
+    section(G, 'Open defects & dispositions'); table(G, ['Defect', 'Severity', 'Status'], defs.map((d: any) => [`${d.code} ${d.name}`, d.severity, d.status]));
+    section(G, 'Business sign-off'); G.md.push(tp.status === 'signed_off' ? `Signed off by ${tp.business_owner ?? '⚠ MISSING owner'}.` : '**Not signed off.** Sign-off is recorded by the business owner on the test plan; this report does not constitute acceptance.');
+    return G;
+  },
+  async meeting_minutes(db, ctx, { record_id }) {
+    if (!record_id) throw badRequest('record_id (meeting id) is required');
+    const m = (await db.query(`SELECT * FROM meetings WHERE id=$1 AND org_id=$2 AND deleted_at IS NULL`, [record_id, ctx.orgId])).rows[0]; if (!m) throw notFound('Meeting');
+    const G = g(`Minutes – ${m.name}`); src(G, 'meetings', m);
+    field(G, 'Date/time', m.meeting_at ? new Date(m.meeting_at).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : null); field(G, 'Type', m.meeting_type); field(G, 'Attendees', m.attendees); field(G, 'Apologies', m.apologies);
+    section(G, 'Agenda', m.agenda, 'Agenda'); section(G, 'Minutes', m.minutes, 'Minutes');
+    const acts = (await db.query(`SELECT w.code, w.name, w.due_date, w.status, u.name AS owner FROM work_items w LEFT JOIN users u ON u.id=COALESCE(w.assignee_id, w.owner_id) WHERE w.meeting_id=$1 AND w.deleted_at IS NULL ORDER BY w.due_date`, [m.id])).rows;
+    section(G, 'Actions'); table(G, ['Action', 'Owner', 'Due', 'Status'], acts.map((a: any) => [`${a.code} ${a.name}`, a.owner, a.due_date, a.status]), 'No actions linked to this meeting.');
+    const decs = m.context_id ? (await db.query(`SELECT code, name, decision, decided_on FROM decisions WHERE context_id=$1 AND deleted_at IS NULL AND (decided_on IS NULL OR decided_on >= $2::date - 1) ORDER BY code LIMIT 20`, [m.context_id, m.meeting_at ?? new Date()])).rows : [];
+    section(G, 'Decisions'); table(G, ['Decision', 'Outcome', 'Date'], decs.map((d: any) => [`${d.code} ${d.name}`, d.decision, d.decided_on]), 'No decisions recorded.');
+    return G;
+  },
 };
 
 export const DOC_GENERATORS = Object.keys(generators);
@@ -185,9 +304,10 @@ export const DOC_GENERATORS = Object.keys(generators);
 export async function generateDocument(db: Db, ctx: Ctx, input: { doc_type: string; context_type?: string; context_id?: string; record_id?: string }) {
   const gen = generators[input.doc_type];
   if (!gen) throw badRequest(`No generator for document type ${input.doc_type}. Available: ${DOC_GENERATORS.join(', ')}`);
-  if (['project_charter', 'status_report', 'closure_report'].includes(input.doc_type) && (input.context_type !== 'project' || !input.context_id)) throw badRequest('This document requires context_type=project and context_id');
+  if (['project_charter', 'status_report', 'closure_report', 'project_management_plan'].includes(input.doc_type) && (input.context_type !== 'project' || !input.context_id)) throw badRequest('This document requires context_type=project and context_id');
   const G = await gen(db, ctx, input);
-  const content = G.md.join('\n') + `\n\n---\n**Source records:** ${[...new Map(G.sources.map((s) => [s.id, s])).values()].map((s) => s.code).join(', ') || 'none'}\n\n**Missing information (${G.missing.length}):** ${G.missing.length ? [...new Set(G.missing)].join('; ') : 'none'}\n`;
+  const header = `> **Controlled document metadata** – Generated ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC by ${ctx.name} from platform records${input.context_type ? ` (${input.context_type})` : ''}. Status: **DRAFT – not approved** until the document approval workflow completes (FR-DOC-013/014).\n\n`;
+  const content = header + G.md.join('\n') + `\n\n---\n**Source records:** ${[...new Map(G.sources.map((s) => [s.id, s])).values()].map((s) => s.code).join(', ') || 'none'}\n\n**Missing information (${G.missing.length}):** ${G.missing.length ? [...new Set(G.missing)].join('; ') : 'none'}\n`;
   const ctxType = input.context_type ?? 'none';
   const ctxId = input.context_type ? input.context_id ?? null : null;
   let doc = (await db.query(`SELECT * FROM documents WHERE org_id=$1 AND doc_type=$2 AND context_type IS NOT DISTINCT FROM $3 AND context_id IS NOT DISTINCT FROM $4 AND name=$5 AND deleted_at IS NULL FOR UPDATE`,
