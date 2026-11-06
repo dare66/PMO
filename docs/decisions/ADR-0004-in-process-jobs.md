@@ -1,0 +1,2 @@
+# ADR-0004 – In-process scheduler for jobs and the integration queue (single node)
+**Status:** Accepted for MVP · **Context:** daily checks (expiry, reviews, overdue, escalation) and queue delivery are light. **Decision:** `setInterval` scheduler with `job_runs` log; queue uses `FOR UPDATE SKIP LOCKED` so it is already safe for several workers. **Consequence:** when running >1 API replica set `JOBS_ENABLED=false` on all but one, or deploy a dedicated worker container (planned). Redis is not introduced until a measured need exists.

@@ -1,0 +1,2 @@
+# ADR-0007 – RAG semantics: missing data is never green
+**Status:** Accepted · Component RAG from configurable thresholds; missing input ⇒ `unknown` (hatched grey, “No data”). Overall = worst known component; if all unknown ⇒ unknown; if some unknown and the rest green ⇒ **amber** with an explicit data-gap list. An empty risk register is a data gap, not “no risk”. Zero is a real value and is distinct from missing.
