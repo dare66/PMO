@@ -1,0 +1,8 @@
+# API
+
+- **Live specification:** `GET /api/openapi.json` (authenticated). A snapshot is committed at `docs/api/openapi.json`.
+- **Style:** REST/JSON, cookie (browser, + `x-requested-with: pmo` on writes) or `Authorization: Bearer <token>` from `POST /api/auth/login`.
+- **Generic resources:** `GET/POST /api/r/{resource}`, `GET/PATCH/DELETE /api/r/{resource}/{id}` for every registry resource (≈55). List parameters: `q`, `page`, `pageSize` (≤500), `sort=column:asc|desc`, and equality filters on any field (`status=open,monitoring`, `context_type=project&context_id=…`, `field=null`). Responses include `_refs` (resolved references) and `_context` labels plus computed fields (risk `score/rating`, idea `rice_score/wsjf_score`, KR `progress_pct`, benefit `realisation_pct`, contract `days_to_expiry`).
+- **Writes:** strict schemas (unknown fields → 400), send `row_version` for optimistic locking (stale → 409), governed statuses → 422.
+- **Errors:** `{ error, message, details? }` with 400 / 401 / 403 / 404 / 409 / 422 / 423 / 429 / 500.
+- **Domain endpoints:** dashboards, project/product summaries and closure, BIA analysis/impacts/dependencies/traceability/screening, finance summary/EVM/business-case evaluation, capacity, workflows (definitions/start/advance/cancel), approvals (inbox/decide/delegate) and submissions (budgets, purchase requests, business cases, documents, risk acceptance, BIA, change requests, CAB), release readiness/deploy, documents (generate/versions), search, notifications, audit (+verify), AI (status/ask/analyse/interactions/accept-suggestion), integrations (catalogue/test/events/retry), signed inbound webhooks `POST /api/hooks/{orgCode}/{key}`, administration (roles, user roles, passwords, RAG thresholds, approval matrix, jobs).

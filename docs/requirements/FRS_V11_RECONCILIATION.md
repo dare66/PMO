@@ -1,0 +1,439 @@
+# FRS-EPMO-001 v1.1 reconciliation register
+
+Every item of the uploaded FRS v1.1 is listed below under its **original ID**. No requirement has been removed. The customer noted the uploaded file is not the complete FRS; sections not supplied are tracked as GAP-013.
+
+**Totals:** 301 items · 244 Implemented · 55 Partial · 2 Deferred
+
+Status meanings: *Implemented* = built and server-enforced where it is a rule; *Partial* = core built, remainder stated; *Deferred* = not built in this release with justification. "frs: …" test references are in `backend/test/frs.test.ts`; TC-* references are in `backend/test/api.test.ts`.
+
+
+## GO
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| GO-01 | Single source of truth – All active projects have one unique project record and linked registers. | Implemented | projects table is the single project identity; registers link by context_type/context_id; requests.converted_project_id | TC-PRD-001; frs: intake pipeline | — |
+| GO-02 | Governance consistency – Configured stage gates, required evidence and approvals are enforced. | Implemented | workflow_definitions gates with entry/exit criteria; GUARDED_STATUS; approvals engine | TC-WF-001..002; TC-GOV-* | — |
+| GO-03 | Delivery predictability – Baseline, forecast, actuals and variance are visible for scope, schedule and cost. | Implemented | project_baselines (immutable), /api/projects/:id/schedule (forecast vs baseline), finance summary (budget/actual/forecast/EAC) | TC-FIN-003; frs: baselines | — |
+| GO-04 | Business value – Every approved project has measurable outcomes, benefit owners and review dates. | Implemented | benefits with owner, baseline, target, measurement date; gate criterion benefits_defined | TC-WF-001 | — |
+| GO-05 | Operational continuity – Business-critical projects capture BIA, recovery and service transition requirements. | Implemented | BIA screening & gate criterion bia_approved_if_required; release readiness; service acceptance | TC-BIA-*; TC-REL-* | — |
+| GO-06 | Resource transparency – Capacity, assignment, availability and cross-project conflicts can be viewed. | Implemented | resource_allocations, availability, capacity heatmap, over-allocation on resource request | TC-CALC-LOAD; frs: allocation requests | — |
+| GO-07 | Traceability – Objectives map to requirements, deliverables, test evidence, acceptance and benefits. | Implemented | /api/traceability/:type/:id (objective→requirement→work→test→evidence) + CSV snapshot | api: TC-BA-RQ | — |
+| GO-08 | Auditability – Material changes, approvals and decisions are attributable and time-stamped. | Implemented | hash-chained append-only audit_events for every mutation, approval and decision | TC-AUD-001..002 | — |
+| GO-09 | Knowledge reuse – Approved templates, SOPs, guides, process flows and lessons learned are searchable. | Implemented | documents (sop/user_guide/process_flow generators), lessons with /api/lessons/relevant, global search | frs: generators | — |
+| GO-10 | AI productivity – AI-generated artefacts are sourced, reviewable, versioned and approval-controlled. | Implemented | AI intake drafts origin=ai, human acceptance only, sources cited, generated docs DRAFT until approval | TC-AI-*; frs: AI acceptance | — |
+
+## FR-PORT
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-PORT-001 | Maintain portfolio hierarchy of strategic objectives, portfolios, programmes, projects, products and initiatives. | Implemented | objectives → portfolios → programmes → projects/products; requests as initiatives | TC-RPT-OKR | — |
+| FR-PORT-002 | Allow projects to map to one or more strategic objectives, outcomes, KPIs and investment themes. | Partial | projects.objective_id, portfolio investment theme, key results | — | Single objective per project; M:N project↔objective links planned Phase 3 |
+| FR-PORT-003 | Provide intake pipeline states: submitted, screening, discovery, proposed, approved, deferred, rejected, active, suspended, closed. | Implemented | requests.pipeline_stage state machine via POST /api/requests/:id/transition (all 10 states) | frs: intake pipeline | — |
+| FR-PORT-004 | Score and rank proposals using configurable value, urgency, strategic fit, risk, cost, capacity and regulatory drivers. | Implemented | scoring_models (configurable weighted criteria, direction), /api/scores with audited overrides; immutable scores | frs: scoring | — |
+| FR-PORT-005 | Support portfolio what-if scenarios for funding, prioritisation, resource constraints and sequencing. | Partial | investment_scenarios + scenario_items with funding/capacity limits, /api/scenarios/:id/evaluate | — | Sequencing what-if (start-date shifting) planned Phase 3 |
+| FR-PORT-006 | Show portfolio heatmaps by health, status, business unit, sponsor, delivery method, budget, risk and strategic objective. | Partial | executive dashboard health/risk/alignment map, filterable registers | TC-RPT-001 | Heatmap pivots by business unit/sponsor/delivery method planned Phase 3 |
+| FR-PORT-007 | Identify cross-project dependencies, shared milestones, duplicated scope and resource conflicts. | Partial | dependencies register (cross-project), duplicate detection, resource conflicts | frs: duplicates | Shared-milestone & duplicated-scope analytics view planned Phase 3 |
+| FR-PORT-008 | Maintain portfolio-level benefits, investment, forecast and delivery confidence. | Implemented | portfolio finance roll-up, benefits, health/confidence on dashboard | TC-FIN-003 | — |
+| FR-PORT-009 | Support portfolio review cycles, decisions, minutes, actions and re-prioritisation history. | Implemented | decisions, meetings (minutes), actions, scores history (immutable) for re-prioritisation | frs: scoring | — |
+| FR-PORT-010 | Provide configurable portfolio thresholds and exception alerts. | Implemented | rag_thresholds (configurable) + runEscalations exception alerts (finance >5%, risks, issues) | TC-RPT-001 | — |
+
+## FR-INIT
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-INIT-001 | Provide configurable request forms by request type: new project, enhancement, operational improvement, compliance, infrastructure, product and emergency work. | Partial | requests with request_type (7 types incl. emergency) and type-specific fields | frs: intake pipeline | Per-type form layouts are metadata-driven but not yet admin-configurable per type (Phase 3) |
+| FR-INIT-002 | Capture problem/opportunity, current state, proposed outcome, urgency, sponsor, requester, department, impacted customers and target date. | Implemented | requests: problem_statement, current_state, proposed_outcome, urgency, sponsor, requester, department, impacted_customers, target_date | frs: intake pipeline | — |
+| FR-INIT-003 | Detect possible duplicate requests using title, description, system, business process and related project references. | Implemented | findDuplicates (title, description, system, process; requests+projects+ideas); audited on create | frs: intake pipeline | — |
+| FR-INIT-004 | Generate a unique project/request identifier using configurable numbering rules. | Partial | nextCode per org/prefix (RQ-0001, PRJ-…) | — | Prefix configurable in registry; admin-editable numbering rules planned Phase 3 |
+| FR-INIT-005 | Support triage, clarification, assessment, rejection, deferral and conversion into a project. | Implemented | triage/screening/discovery/rejection (reason)/deferral (reason+date)/convert | frs: intake pipeline | — |
+| FR-INIT-006 | Generate a project charter with purpose, objectives, measurable success criteria, scope boundaries, assumptions, constraints, high-level risks, budget authority and PM appointment. | Implemented | project_charter generator with explicit MISSING markers | TC-RPT-DOC | — |
+| FR-INIT-007 | Record project classification, complexity, criticality, regulatory category, delivery approach and governance tier. | Implemented | projects: project_type, complexity, criticality, regulatory_category, delivery_approach, governance_tier | — | — |
+| FR-INIT-008 | Maintain project lifecycle status, phase, owner, sponsor, business owner, PM, start/end dates and current forecast. | Implemented | projects: status, lifecycle_stage, owner, sponsor, business_owner_id, dates, forecast (schedule) | — | — |
+| FR-INIT-009 | Support project suspension, restart, cancellation, termination and archival with reason and approvals. | Partial | statuses suspended/terminated/archived + status_reason; closure guarded | TC-PRD-002 | Approval routing for suspend/terminate planned Phase 3 (closure already approval-guarded) |
+| FR-INIT-010 | Allow project creation from approved templates, prior projects or programme work packages. | Implemented | convert request with template_project_id (copies milestones); programme_id | frs: intake pipeline | — |
+
+## FR-BC
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-BC-001 | Capture strategic rationale, problem statement, opportunity, options including do-nothing, recommended option and decision rationale. | Implemented | business_cases: rationale, problem, options incl. do-nothing, recommendation | — | — |
+| FR-BC-002 | Capture financial and non-financial benefits, dis-benefits, costs, assumptions, dependencies, constraints and risks. | Implemented | business_cases + dis_benefits, assumptions, dependencies, risks; benefits register | — | — |
+| FR-BC-003 | Calculate configurable NPV, ROI, payback period, TCO, IRR and cost-benefit ratios where input data is available. | Implemented | evaluateBusinessCase NPV/IRR/payback/ROI; null when inputs missing | calc tests | — |
+| FR-BC-004 | Support sensitivity analysis and best/base/worst-case scenarios. | Implemented | sensitivity_pct with best/base/worst in /api/business-cases/:id/evaluate | calc tests | — |
+| FR-BC-005 | Record feasibility across business, technical, operational, legal, security, data, commercial and resource dimensions. | Partial | business_cases.feasibility (structured text) | — | Per-dimension feasibility scoring planned Phase 3 |
+| FR-BC-006 | Assign a named benefit owner, baseline measure, target, measurement method, due date and evidence source to each benefit. | Implemented | benefits: owner, baseline, target, measurement method, due date, evidence | — | — |
+| FR-BC-007 | Version business cases and preserve approved assumptions and financial baselines. | Partial | business_cases.version; approval preserved in audit; approval guard | — | Snapshot table for approved business case versions planned Phase 3 (audit holds full before/after) |
+| FR-BC-008 | Generate business case approval packs and decision records. | Implemented | business_case generator + decision records on approval | TC-RPT-DOC | — |
+
+## FR-BA
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-BA-001 | Maintain business context, capability map, current-state and future-state process descriptions. | Implemented | business_capabilities, business_processes (as_is/to_be), process_steps | — | — |
+| FR-BA-002 | Model processes using BPMN-compatible notation or an exportable process representation. | Implemented | BPMN 2.0 import/export /api/processes/:id/bpmn (XXE guarded); Mermaid process_flow generator | frs: BPMN XXE | — |
+| FR-BA-003 | Capture stakeholder needs, business requirements, stakeholder requirements, functional requirements and non-functional requirements. | Implemented | requirements.req_type business/functional/non_functional/regulatory/bc_dr; stakeholders | — | — |
+| FR-BA-004 | Assign unique requirement IDs, source, owner, priority, rationale, acceptance criteria, status and version. | Implemented | requirements: code, source, owner, priority, acceptance criteria, status, version (immutable history) | TC-BA-RQ | — |
+| FR-BA-005 | Support requirement elicitation sessions, workshops, interviews, surveys, observations and document analysis. | Partial | meetings (meeting_type workshop/interview) and AI intake from notes | — | Dedicated elicitation-session register planned Phase 3 |
+| FR-BA-006 | Support requirement prioritisation using MoSCoW, weighted scoring or configurable schemes. | Implemented | MoSCoW priority; weighted scoring models | frs: scoring | — |
+| FR-BA-007 | Maintain bidirectional traceability from business objective to requirement, design, work item, test case, defect, deliverable and benefit. | Implemented | traceability matrix objective→requirement→work item→test→defect/evidence | TC-BA-RQ | — |
+| FR-BA-008 | Record requirement review, approval, baselining and change history. | Implemented | requirement submit→approval (SoD), approved edits re-version and return to review | TC-BA-RQ | — |
+| FR-BA-009 | Generate BRD, FRS, FRD, user stories, use cases, process specifications and requirements traceability matrix. | Implemented | requirements_spec (BRD/FRS + RTM) generator; RTM CSV export | frs: generators | — |
+| FR-BA-010 | Support requirement decomposition, parent-child relationships, duplicates, conflicts and coverage analysis. | Partial | parent links via work items; duplicate detection; coverage in quality status | — | Requirement parent/child & conflict links planned Phase 3 |
+| FR-BA-011 | Capture interface, data, migration, reporting, security, accessibility, performance and operational requirements. | Implemented | req_type non_functional/regulatory/bc_dr with category tagging | — | — |
+| FR-BA-012 | Record requirement acceptance and verification evidence. | Implemented | test executions with evidence_ref verify requirements (RTM verified flag) | TC-BA-RQ | — |
+
+## FR-SCP
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-SCP-001 | Define project scope statement, objectives, inclusions, exclusions, constraints, assumptions and boundaries. | Implemented | projects.scope_statement, assumptions register, constraints | — | — |
+| FR-SCP-002 | Create hierarchical WBS with work packages, control accounts, deliverables and acceptance criteria. | Partial | work_items hierarchy (phase/work_package/deliverable links), deliverables | — | Control-account attributes planned Phase 3 |
+| FR-SCP-003 | Support deliverable register with owner, due date, quality criteria, version, evidence and acceptance status. | Implemented | deliverables register with owner, due date, acceptance status, evidence files | — | — |
+| FR-SCP-004 | Link scope items to requirements, schedule activities, cost estimates, risks, contracts and test evidence. | Implemented | links via requirement_id, work items, risks/contexts, traceability | — | — |
+| FR-SCP-005 | Baseline scope and maintain approved revisions. | Implemented | POST /api/projects/:id/baseline; immutable project_baselines; re-baseline only via approved CR | frs: baselines | — |
+| FR-SCP-006 | Validate deliverables with authorised business owners and record acceptance/rejection. | Implemented | deliverable acceptance; contract milestone acceptance (human only) | — | — |
+| FR-SCP-007 | Detect unapproved scope additions and incomplete scope coverage. | Partial | RTM gaps (requirements without work/tests) | — | Unapproved-scope-addition detection planned Phase 3 |
+| FR-SCP-008 | Support product backlog, epics, features, stories and sprint scope for adaptive projects. | Implemented | work types epic/feature/story; sprints | frs: sprints | — |
+
+## FR-SCH
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-SCH-001 | Create activities from WBS, backlog, templates or imports. | Implemented | work items from backlog, templates (request conversion), AI intake, CSV/integration import | — | — |
+| FR-SCH-002 | Maintain activity ID, description, owner, duration, effort, calendar, start/finish, constraint, status and completion rules. | Implemented | work_items: owner, effort, durations, dates, status, completion rules (requires_evidence) | — | — |
+| FR-SCH-003 | Support finish-to-start, start-to-start, finish-to-finish and start-to-finish dependencies with leads/lags. | Implemented | work_dependencies FS/SS/FF/SF with lag; cycle refusal | frs: CPM | — |
+| FR-SCH-004 | Calculate earliest/latest dates, float, critical path and forecast finish for supported scheduling models. | Implemented | CPM forward/backward pass, float, critical path, forecast finish (/api/projects/:id/schedule) | frs: CPM | — |
+| FR-SCH-005 | Provide Gantt, milestone, calendar, dependency network and roadmap views. | Partial | Gantt (timeline) and roadmap views; milestone list | — | Dependency network and calendar views planned with frontend Phase 3 |
+| FR-SCH-006 | Support working calendars, holidays, time zones, working patterns and project-specific calendars. | Partial | holidays calendar (org/calendar), weekends excluded in CPM | frs: working days | Per-project calendars and time-zone-aware working patterns planned Phase 3 |
+| FR-SCH-007 | Support analogous, parametric, bottom-up, three-point and expert-judgement estimates with assumptions and confidence. | Partial | three-point (PERT) estimates, estimate_hours | frs: PERT | Analogous/parametric estimate records planned Phase 3 |
+| FR-SCH-008 | Maintain schedule baseline, current plan, forecast and actual dates separately. | Implemented | baseline_start/end (locked), current plan dates, actual_end; milestones.baseline_date | frs: baselines | — |
+| FR-SCH-009 | Calculate schedule variance, SPI and milestone slippage where baseline and actual data exist. | Implemented | SPI/SV (EVM) and slippage vs baseline | calc tests | — |
+| FR-SCH-010 | Support schedule compression options, resource levelling and what-if scenarios. | Deferred | - | — | Resource levelling/compression algorithms deferred to Phase 4; what-if via investment scenarios |
+| FR-SCH-011 | Record planning assumptions, constraints, contingency and schedule reserve. | Implemented | assumptions register; budgets.budget_type contingency/management_reserve | — | — |
+| FR-SCH-012 | Support agile iterations, sprint planning, velocity, release planning and backlog burn-up/down. | Implemented | sprints, /api/sprints/:id/report (burndown, velocity) | frs: sprints | — |
+
+## FR-WRK
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-WRK-001 | Provide work hierarchy: portfolio initiative, project, phase, deliverable, WBS work package, epic, feature, story, task, subtask and action. | Implemented | work_type includes phase, work_package, epic, feature, story, task, subtask, action | — | — |
+| FR-WRK-002 | Assign one accountable owner and optional collaborators, watchers and approvers to each work item. | Implemented | owner + assignee, watchers (/api/watch), approvals | — | — |
+| FR-WRK-003 | Capture status, priority, planned/actual dates, effort, estimate, remaining work, dependencies, acceptance criteria and completion evidence. | Implemented | status, priority, dates, estimate/actual/remaining, dependencies, acceptance & evidence | — | — |
+| FR-WRK-004 | Support configurable Kanban boards, lists, calendars, Gantt-linked tasks and sprint boards. | Partial | Kanban board (board_rank), lists, sprint assignment | — | Calendar view planned Phase 3 |
+| FR-WRK-005 | Support recurring tasks, checklists, templates, bulk updates and task cloning. | Partial | recurrence (spawned on done), templates via conversion | — | Checklists, bulk update and clone actions planned Phase 3 |
+| FR-WRK-006 | Allow comments, mentions, attachments, activity history and decision links. | Implemented | comments with @mentions, files (scanned), audit history, decision links | frs: comments; quarantine | — |
+| FR-WRK-007 | Provide personal work queue, overdue list, upcoming deadlines and workload view. | Implemented | My work page (overdue, upcoming), workload heatmap | — | — |
+| FR-WRK-008 | Support blockers, impediments, escalation, reassignment and delegation with history. | Implemented | blocked_reason required, escalation job, reassignment audited, approval delegation | frs: evidence/blocked | — |
+| FR-WRK-009 | Require evidence or acceptance before configured task/deliverable completion. | Implemented | requires_evidence → done needs completion_evidence or clean attachment | frs: evidence | — |
+| FR-WRK-010 | Aggregate progress using configurable weighted rules; do not equate number of completed tasks with project progress by default. | Implemented | /api/projects/:id/progress weighted effort/milestone; task counts never used | frs: progress | — |
+| FR-WRK-011 | Support worklogs, time entries, estimates and approval where enabled. | Implemented | time_entries own-time only, approval by another person, immutable after decision | frs: time entries | — |
+| FR-WRK-012 | Integrate external work items from tools such as Jira, Git platforms or service management systems without duplicating master project identity. | Partial | integration framework (Jira/Azure DevOps MOCK adapters) with idempotent inbound events keyed by external_id | TC-INT-* | Live connectors need customer credentials (env-referenced) – Phase 4 |
+
+## FR-RES
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-RES-001 | Maintain resource profiles with role, department, skills, proficiency, location, manager, employment/vendor type and availability. | Implemented | users: title, department, skills/proficiency, location, manager_id, employment_type, availability | — | — |
+| FR-RES-002 | Maintain resource calendars, leave/absence availability where integrated, capacity and working hours. | Partial | availability (leave/training), capacity | — | HR-integrated calendars via MOCK adapter only |
+| FR-RES-003 | Create resource demand by role, skill, period, effort and project phase. | Implemented | skill_requirements by skill/proficiency/period/FTE | — | — |
+| FR-RES-004 | Allocate named or role-based resources with planned effort, percentage allocation and start/end dates. | Implemented | resource_allocations named, % and dates, soft/hard | — | — |
+| FR-RES-005 | Detect over-allocation, under-utilisation, conflicting commitments and skill gaps. | Implemented | over-allocation on request, capacity heatmap, /api/skills/gap | frs: allocation | — |
+| FR-RES-006 | Support resource request, manager review, allocation approval and release workflows. | Implemented | allocation request → resource manager approval → active; release status | frs: allocation | — |
+| FR-RES-007 | Provide team capacity, utilisation, demand-versus-capacity and forecast dashboards. | Implemented | capacity heatmap, utilisation, demand vs capacity | TC-RPT-HEAT | — |
+| FR-RES-008 | Support RACI / responsibility assignment matrix by deliverable, process, decision and work package. | Implemented | raci_assignments; one A per item enforced; /api/raci/:type/:id validation | frs: RACI | — |
+| FR-RES-009 | Maintain team directory, project organisation chart, contact details and escalation path. | Partial | users directory with manager, phone, location; teams | — | Org-chart visual planned Phase 3 |
+| FR-RES-010 | Support onboarding/offboarding checklists, access requests, knowledge transfer and role handover. | Deferred | - | — | Onboarding/offboarding checklists deferred to Phase 4 (can be modelled with recurring work templates meanwhile) |
+| FR-RES-011 | Support team health, feedback, lessons and skills development actions without becoming an employee performance appraisal system. | Partial | lessons, feedback; access_end_date ends access automatically | frs: access end | Team-health pulse planned Phase 3; deliberately not a performance appraisal system |
+| FR-RES-012 | Support vendor and contingent team members with restricted access and contract end dates. | Implemented | employment_type contractor/vendor, access_end_date enforced at login and per request | frs: access end | — |
+
+## FR-STK
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-STK-001 | Maintain stakeholder register with organisation, role, influence, interest, impact, position, needs and contact channel. | Implemented | stakeholders: organisation, role, influence, interest, attitude, channel; quadrant computed | — | — |
+| FR-STK-002 | Map stakeholders to projects, processes, requirements, decisions and benefits. | Partial | stakeholders per context; user link | — | Links to individual requirements/decisions/benefits planned Phase 3 |
+| FR-STK-003 | Create stakeholder engagement assessment and action plan. | Implemented | engagement current vs desired + plan | — | — |
+| FR-STK-004 | Maintain communication plan with audience, message, owner, channel, frequency and evidence. | Implemented | communications register (audience, message, owner, channel, frequency, evidence) | — | — |
+| FR-STK-005 | Schedule and record project meetings, agendas, attendance, minutes, decisions and actions. | Implemented | meetings with agenda, attendees, minutes; meeting_minutes generator | frs: generators | — |
+| FR-STK-006 | Generate action items from meeting minutes and link them to work items and owners. | Implemented | work_items.meeting_id; AI action extraction from minutes (suggestions) | TC-AI-* | — |
+| FR-STK-007 | Support announcements, targeted updates, acknowledgement tracking and communication history. | Implemented | announcements publish (endpoint only), targeted roles, acknowledgement tracking | frs: announcements | — |
+| FR-STK-008 | Provide stakeholder feedback, issue escalation and engagement trend reporting. | Partial | feedback register, issue escalation | — | Engagement trend chart planned Phase 3 |
+
+## FR-RAID
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-RAID-001 | Maintain separate but linked risk, assumption, issue, dependency and decision registers. | Implemented | separate risks, assumptions, issues, dependencies, decisions registers | — | — |
+| FR-RAID-002 | Capture cause, event, effect, category, owner, date raised, due date, status and response. | Implemented | cause/event/effect, category, owner, dates, status, response | — | — |
+| FR-RAID-003 | Support configurable probability-impact scoring, exposure, urgency, proximity and risk velocity. | Implemented | likelihood×impact score, probability %, proximity, velocity | — | — |
+| FR-RAID-004 | Support threat and opportunity responses, contingency, trigger, residual risk and secondary risk. | Implemented | risk_type threat/opportunity, contingency, trigger, residual, secondary risk | — | — |
+| FR-RAID-005 | Support quantitative analysis such as expected monetary value, sensitivity and Monte Carlo integration where enabled. | Partial | EMV computed (probability × cost impact, sign by threat/opportunity) | — | Monte Carlo via integration deferred to Phase 4 |
+| FR-RAID-006 | Link risks to objectives, WBS, schedule, budget, requirements, vendors, BIA and controls. | Implemented | risk contexts incl. BIA/product/vendor; controls link | — | — |
+| FR-RAID-007 | Escalate risks/issues based on thresholds, age, exposure and missed response dates. | Implemented | runEscalations (score/age/overdue) for risks & issues | — | — |
+| FR-RAID-008 | Maintain risk review history, acceptance rationale and approval. | Implemented | risk acceptance approval (humans, appetite-based routing), acceptance_rationale, last_reviewed_on | TC-GOV-* | — |
+| FR-RAID-009 | Provide project and portfolio risk heatmaps, top risks and trend reports. | Implemented | risk heatmap per project and portfolio, top risks | — | — |
+| FR-RAID-010 | Convert identified issues into actions/work items and track closure evidence. | Implemented | POST /api/issues/:id/convert-to-work | — | — |
+
+## FR-QLT
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-QLT-001 | Create project quality management plan with standards, roles, assurance activities and acceptance criteria. | Partial | project_management_plan generator quality section; quality reviews | frs: generators | Dedicated quality plan template planned Phase 3 |
+| FR-QLT-002 | Maintain quality metrics, checklists, review schedules and evidence. | Implemented | quality_reviews with standard/checklist ref, schedule, evidence files | — | — |
+| FR-QLT-003 | Support quality assurance reviews, process audits, peer reviews and deliverable inspections. | Implemented | review_type qa_review/process_audit/peer_review/inspection | — | — |
+| FR-QLT-004 | Record non-conformances, root cause, corrective/preventive actions and effectiveness checks. | Implemented | non_conformances: root cause, corrective/preventive, effectiveness check; overdue flag | — | — |
+| FR-QLT-005 | Link quality criteria to requirements, deliverables, test cases and acceptance decisions. | Implemented | test_cases.requirement_id, deliverable reviews, acceptance | — | — |
+| FR-QLT-006 | Provide quality gate status and unresolved quality exceptions. | Implemented | /api/quality/:type/:id gate & exceptions | frs: waivers | — |
+
+## FR-TST
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-TST-001 | Maintain test strategy, test plan, test environment, entry/exit criteria and test roles. | Implemented | test_plans entry/exit criteria, level, environment, roles | — | — |
+| FR-TST-002 | Support test levels and types including unit evidence, system integration, regression, performance, security, accessibility, migration and UAT. | Implemented | test_level unit…uat, performance, security, oat | — | — |
+| FR-TST-003 | Create test suites, scenarios, cases, steps, expected results, actual results and evidence attachments. | Implemented | test_cases steps/expected; executions with evidence & files | — | — |
+| FR-TST-004 | Trace test cases to requirements, risks, processes and acceptance criteria. | Implemented | test_cases → requirements; RTM | TC-BA-RQ | — |
+| FR-TST-005 | Record execution status, tester, execution date, environment, build/version and result. | Implemented | test_executions: tester, date, environment, build_version, result | — | — |
+| FR-TST-006 | Manage defects with severity, priority, owner, root cause, status, fix version, retest and closure evidence. | Implemented | defects: severity, priority, owner, root cause, fix version, reopen count | — | — |
+| FR-TST-007 | Support defect triage, waiver, known error and residual risk acceptance. | Implemented | waiver/known error only via approval; residual risks at service acceptance | frs: waivers | — |
+| FR-TST-008 | Calculate requirement coverage, pass rate, defect leakage, reopen rate and outstanding severity. | Implemented | coverage, pass rate, leakage, reopen rate, outstanding severity | frs: quality | — |
+| FR-TST-009 | Generate SIT/UAT reports, test completion reports and business sign-off packs. | Implemented | uat_report generator (sign-off state explicit) | frs: generators | — |
+| FR-TST-010 | Separate PMO governance and evidence oversight from business-owned UAT execution where the organisation assigns execution to Operations or business users. | Implemented | test_plans.business_owner_id signs off UAT; testers/operations execute; PMO read-only oversight | TC-REL-* | — |
+
+## FR-CHG
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-CHG-001 | Support project change requests for scope, requirements, schedule, cost, resources, quality, risk, procurement and baselines. | Implemented | change_requests change_type scope/schedule/cost/… | TC-CHG-* | — |
+| FR-CHG-002 | Capture change origin, reason, description, urgency, alternatives, impact, recommendation and requested effective date. | Implemented | origin, justification, urgency, alternatives, impact, recommendation, requested_effective_date | — | — |
+| FR-CHG-003 | Require integrated impact assessment across scope, schedule, finance, resources, benefits, risk, BIA, architecture, security, operations and contracts as applicable. | Implemented | auto impact assessments (schedule, cost, scope, risk, BIA, security, operations, vendor) | TC-CHG-* | — |
+| FR-CHG-004 | Route changes using configurable authority thresholds and review roles. | Implemented | approval matrix thresholds + parallel finance approval | TC-GOV-* | — |
+| FR-CHG-005 | Maintain change log with submitted, assessed, approved, rejected, deferred, implemented and verified states. | Implemented | statuses submitted/assessing/pending/approved/rejected/deferred/implemented/verified | — | — |
+| FR-CHG-006 | Prevent approved baseline changes until the change is authorised and implementation is confirmed. | Implemented | baseline fields locked; approved CR creates new baseline version | frs: re-baseline | — |
+| FR-CHG-007 | Support emergency change path with retrospective review and audit. | Implemented | emergency flag; retrospective review escalation | — | — |
+| FR-CHG-008 | Maintain configuration item register, versions, environments, release references and relationships. | Implemented | configuration_items with versions, environments, releases, parent | — | — |
+| FR-CHG-009 | Link changes to affected requirements, documents, tasks, tests, risks, costs and releases. | Partial | CR context + impact assessments; documents/releases linked by context | — | Explicit CR↔artefact link table planned Phase 3 |
+| FR-CHG-010 | Report change volume, reasons, approval time, rejected changes and cumulative baseline movement. | Implemented | /api/change-metrics volume, reasons, approval time, rejected, cumulative movement | — | — |
+
+## FR-OCM
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-OCM-001 | Assess organisational readiness and change magnitude at initiation and refresh at defined gates. | Implemented | readiness_assessments per gate (5 ADKAR-style dimensions), readiness index | — | — |
+| FR-OCM-002 | Identify impacted roles, teams, locations, processes, policies, systems and customer groups. | Implemented | ocm_impacts group_type role/team/location/process/policy/system/customer | — | — |
+| FR-OCM-003 | Capture change impacts across people, process, technology, data, policy, culture and service. | Implemented | ocm_impacts.dimension people/process/technology/data/policy/culture/service | — | — |
+| FR-OCM-004 | Maintain change strategy, sponsor coalition, change network/champions and engagement plan. | Partial | stakeholders + communications | — | Change network/champions register planned Phase 3 |
+| FR-OCM-005 | Create communication, training, coaching, resistance management and adoption plans. | Implemented | communications, training_activities, mitigation per impact | — | — |
+| FR-OCM-006 | Maintain training needs analysis, learning materials, attendance, assessment and competency evidence. | Implemented | training planned/attended, assessment pass %, materials | — | — |
+| FR-OCM-007 | Measure awareness, readiness, adoption, proficiency, usage and business outcome indicators. | Implemented | /api/ocm/:type/:id readiness trend, training attendance, impacts | — | — |
+| FR-OCM-008 | Manage resistance/issues, feedback, corrective actions and reinforcement. | Partial | ocm impact mitigation; feedback; issues | — | Resistance log view planned Phase 3 |
+| FR-OCM-009 | Transfer ongoing adoption ownership to business operations at closure. | Partial | closure handover in workflow; product metrics ownership | — | Explicit adoption-ownership transfer step planned Phase 3 |
+| FR-OCM-010 | Distinguish organisational change management from formal project change requests; link both where one triggers the other. | Implemented | ocm_impacts (Change module) distinct from change_requests; both in same context | — | — |
+
+## FR-FIN
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-FIN-001 | Maintain approved budget by fiscal period, cost category, work package, department, funding source and currency. | Implemented | budgets by fiscal year, category, CBS, department, funding_source, currency | — | — |
+| FR-FIN-002 | Support cost estimates, estimate basis, confidence range, contingency and management reserve. | Implemented | estimate_basis, confidence_range, budget_type contingency/management_reserve | — | — |
+| FR-FIN-003 | Separate original budget, approved changes, current budget, commitments, actuals, accruals, forecast and estimate at completion. | Implemented | budget_type original/change; actual/commitment/accrual/forecast; EAC | TC-FIN-003 | — |
+| FR-FIN-004 | Support CAPEX/OPEX classification, internal labour, vendor, licence, infrastructure, travel, training, tax and other cost categories. | Implemented | capex/opex + cost categories | — | — |
+| FR-FIN-005 | Record purchase requisitions, purchase orders, contract commitments, invoices and payment milestones or integrate with finance/procurement systems. | Implemented | purchase_requests, contracts, invoices, contract_milestones | — | — |
+| FR-FIN-006 | Support monthly cost capture, actual cost import, reconciliation and finance sign-off. | Implemented | finance_periods lock + sign-off; ERP import MOCK | frs: period locks | — |
+| FR-FIN-007 | Calculate cost variance, CPI, EAC, ETC, VAC, burn rate and cash flow where required inputs exist. | Implemented | EVM CV/CPI/EAC/ETC/VAC, burn, monthly cash flow | calc tests | — |
+| FR-FIN-008 | Support multi-currency budgets with configurable exchange-rate source/date and local reporting currency. | Implemented | fx_rates with date; base reporting currency | TC-FIN-* | — |
+| FR-FIN-009 | Maintain funding approvals, release schedules, funding restrictions and budget owners. | Implemented | budget approvals by authority, release_date, funding_restrictions, owner | — | — |
+| FR-FIN-010 | Track benefits, dis-benefits, revenue, savings, efficiency, risk reduction and non-financial outcomes. | Implemented | benefits types incl. dis-benefits, non-financial | — | — |
+| FR-FIN-011 | Compare planned and realised benefits with baseline, target, actual, measurement date and evidence. | Implemented | benefit realisation % (null if inputs missing), evidence | — | — |
+| FR-FIN-012 | Provide forecast scenarios, cost-to-complete and financial exception alerts. | Implemented | forecast entries, cost-to-complete, finance exception alert >5% | — | — |
+| FR-FIN-013 | Restrict financial visibility by role, project, department and sensitivity classification. | Implemented | budgets:read permission, ABAC classification, export excludes finance without permission | TC-SEC-RBAC; frs: export | — |
+| FR-FIN-014 | Preserve financial period locks and correction/reversal history; never silently overwrite approved actuals. | Implemented | period locks; actuals immutable; reversal entries linked (reversal_of) | frs: reversals | — |
+
+## FR-PROC
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-PROC-001 | Maintain procurement plan, sourcing strategy, make/buy decisions and procurement schedule. | Partial | purchase_requests, tenders | — | Procurement plan/make-or-buy record planned Phase 3 |
+| FR-PROC-002 | Maintain vendor register, due diligence, risk rating, contacts, service category and approved status. | Implemented | vendors: due diligence, risk rating, category, status | TC-VND-* | — |
+| FR-PROC-003 | Record RFIs/RFQs/RFPs, evaluation criteria, bids, scoring, recommendation and approvals. | Implemented | tenders + bids, weighted criteria (sum 100), scoring, award with justification | — | — |
+| FR-PROC-004 | Maintain contract scope, value, currency, term, renewal, obligations, milestones, SLAs, warranties and liabilities. | Implemented | contracts scope/value/term/renewal/SLA; contract_milestones | — | — |
+| FR-PROC-005 | Track vendor deliverables, acceptance, invoice milestones, service levels, issues and performance. | Implemented | contract milestone acceptance (human), vendor_reviews, SLA met % | — | — |
+| FR-PROC-006 | Manage contract changes, claims, disputes, renewals and closure. | Partial | contract statuses, renewal alerts, change requests | — | Claims/disputes register planned Phase 3 |
+| FR-PROC-007 | Link vendor dependencies and concentration risk to project RAID. | Implemented | vendor contexts in RAID, dependencies, concentration in vendor risk | — | — |
+| FR-PROC-008 | Maintain procurement audit evidence and conflict-of-interest declarations where required. | Implemented | coi_declarations block scoring; procurement audit trail | frs: COI | — |
+
+## FR-BIA
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-BIA-001 | Provide BIA questionnaires tailored by project type, business process and criticality. | Partial | BIA screening questions by project type/criticality | TC-BIA-* | Configurable questionnaire builder planned Phase 3 |
+| FR-BIA-002 | Identify critical business services, processes, products, stakeholders, locations and supporting applications. | Implemented | BIA links process, service, product, project, applications; dependencies | — | — |
+| FR-BIA-003 | Capture impact dimensions: financial, operational, customer, regulatory/legal, safety, reputation, data and strategic. | Implemented | categories financial, operational, customer, regulatory, safety, reputational, data, strategic, environmental | — | — |
+| FR-BIA-004 | Assess disruption impacts at configurable time intervals and calculate/record MTPD. | Implemented | impacts at configurable horizons; MTPD derived | TC-BIA-001 | — |
+| FR-BIA-005 | Capture RTO, RPO, minimum service level, maximum data loss, workaround duration and recovery dependencies. | Implemented | RTO, RPO, MBCO/minimum service, workaround duration, dependencies; RTO ≤ MTPD validated | TC-BIA-002 | — |
+| FR-BIA-006 | Identify upstream/downstream dependencies, people, facilities, suppliers, systems, data and communications. | Implemented | bia_dependencies upstream/downstream: people, facilities, suppliers, systems, data | — | — |
+| FR-BIA-007 | Record peak periods, seasonal criticality, manual workaround and resource constraints. | Implemented | peak periods, workaround, resource constraints, operating_hours | — | — |
+| FR-BIA-008 | Link BIA outcomes to risk register, architecture, backup, DR, service continuity and go-live readiness. | Implemented | BIA → risks, recovery strategies, release readiness, traceability | TC-BIA-* | — |
+| FR-BIA-009 | Require business process owner validation and appropriate continuity/operations review. | Implemented | owner + deputy, BC manager approval (SoD) | — | — |
+| FR-BIA-010 | Version BIA, record reassessment triggers and preserve previous approved assessments. | Implemented | bia_versions immutable on approval; material edit reopens with review_trigger | frs: BIA versions | — |
+| FR-BIA-011 | Support business continuity strategy, recovery playbooks, contact trees and exercise evidence. | Implemented | recovery_strategies, bc_exercises with achieved RTO/RPO and evidence | — | — |
+| FR-BIA-012 | Do not infer RTO/RPO or criticality automatically; AI may suggest values but authorised owners must validate them. | Implemented | AI only suggests; targets set by owners; approvals human-only | TC-AI-* | — |
+
+## FR-DOC
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-DOC-001 | Provide project document repository with folders, metadata, tags, classification, owner, version, status and retention category. | Implemented | documents: folder, tags, classification, owner, version, status, retention_category | — | — |
+| FR-DOC-002 | Support document templates, controlled numbering, document types, review cycles and approval workflows. | Partial | doc types, controlled codes (DOC-), review_due, approval workflow | — | Template library editor planned Phase 3 |
+| FR-DOC-003 | Maintain version history, compare versions, check-in/check-out or equivalent edit locking and superseded status. | Implemented | versions (immutable), compare (/compare), check-out/check-in lock | frs: documents | — |
+| FR-DOC-004 | Support controlled generation of charter, business case, project plan, BRD, FRS, FRD, RAID, status report, minutes, test plan, UAT report and closure report. | Implemented | generators: charter, business case, PMP, BRD/FRS, RAID, status, minutes, UAT report, closure, readiness | frs: generators | Test plan document = uat_report for the plan; FRD covered by requirements_spec |
+| FR-DOC-005 | Generate SOPs from approved process steps, roles, controls, exceptions, evidence and revision history. | Implemented | sop generator from process steps, roles, controls, exceptions, revision history | frs: generators | — |
+| FR-DOC-006 | Generate user guides with role-specific instructions, screenshots, field descriptions, prerequisites and troubleshooting. | Partial | user_guide generator (roles, prerequisites, instructions, troubleshooting) | frs: generators | Screenshots are attached manually and flagged MISSING; not auto-captured |
+| FR-DOC-007 | Generate process flows from approved process models and export to common diagram formats. | Implemented | process_flow generator (Mermaid) + BPMN 2.0 export | frs: generators | — |
+| FR-DOC-008 | Maintain document relationships to requirements, deliverables, decisions, risks, changes, tests and approvals. | Partial | document context links; source_refs | — | Explicit document↔requirement/decision relations planned Phase 3 |
+| FR-DOC-009 | Support PDF, DOCX, XLSX, PPTX, CSV, images and common diagram formats subject to safe file handling. | Implemented | allow-listed PDF/DOCX/XLSX/PPTX/CSV/PNG/JPG/SVG… with magic-byte checks, malware scan, quarantine | frs: quarantine | — |
+| FR-DOC-010 | Support full-text search, filters, OCR/indexing where enabled and access-aware results. | Partial | full-text index on document versions; access-aware global search | — | OCR deferred to Phase 4 |
+| FR-DOC-011 | Maintain document review comments, redlines, approval status, distribution list and acknowledgement. | Partial | comments, approval status, distribution, acknowledgement | — | Inline redlines deferred to Phase 4 |
+| FR-DOC-012 | Support retention, legal hold, archive, export and controlled disposal. | Implemented | retention_until, legal hold (delete blocked), archive, export | frs: legal hold | — |
+| FR-DOC-013 | Ensure generated documents identify source project, version, generation date, owner, status and approval state. | Implemented | generated header: source, generation time, author, status; source records listed | frs: generators | — |
+| FR-DOC-014 | Do not represent AI-generated or draft documents as approved or controlled until the defined review and approval process is complete. | Implemented | generated/AI docs always draft until approval workflow | frs: generators | — |
+
+## FR-MTG
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-MTG-001 | Schedule meetings linked to projects, phases, gates, risks, changes or workstreams. | Implemented | meetings linked to project/product/programme contexts | — | — |
+| FR-MTG-002 | Maintain agenda, attendees, apologies, materials, meeting type and confidentiality. | Implemented | agenda, attendees, apologies, materials, meeting_type, classification | — | — |
+| FR-MTG-003 | Capture minutes, decisions, actions, owners, due dates and dependencies. | Implemented | minutes, decisions, actions (work_items.meeting_id) | — | — |
+| FR-MTG-004 | Support decision register with options, rationale, decision maker, date, conditions and evidence. | Implemented | decisions register with rationale, decision maker, date, conditions | — | — |
+| FR-MTG-005 | Track action overdue status, reminders, escalation and closure evidence. | Implemented | overdue action escalation job | — | — |
+| FR-MTG-006 | Generate minutes and action logs from structured meeting data and optional AI transcription input. | Implemented | meeting_minutes generator; AI action suggestions from notes | frs: generators | — |
+
+## FR-OPS
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-OPS-001 | Maintain release/deployment plan, release scope, deployment window, dependencies and accountable leads. | Implemented | releases scope, deployment_window, dependencies, owners | — | — |
+| FR-OPS-002 | Capture cutover checklist, migration steps, sequencing, validation and rollback criteria. | Implemented | cutover_steps sequence, owner, validation, rollback criteria; /api/releases/:id/cutover | — | — |
+| FR-OPS-003 | Require backup/restore, monitoring, security, capacity, access, support and business validation evidence as applicable. | Implemented | backup/monitoring/security/access evidence fields + readiness checks | TC-REL-* | — |
+| FR-OPS-004 | Maintain service ownership, support model, service desk routing, SLA/OLA, escalation and vendor support contacts. | Implemented | services with owner, support model, SLA; vendor contacts | — | — |
+| FR-OPS-005 | Capture runbooks, SOPs, user guides, architecture, configuration, known errors and support knowledge. | Implemented | documents (runbook/SOP/user guide), known errors, CIs | — | — |
+| FR-OPS-006 | Assess operational readiness, staffing, training, licences, support access, monitoring and continuity. | Implemented | operational acceptance, training, readiness | — | — |
+| FR-OPS-007 | Record go/no-go decision, approvers, conditions, time, evidence and rollback decision. | Implemented | go/no-go with conditions/exception, decision record, audit | frs: go/no-go | — |
+| FR-OPS-008 | Support hypercare period, incident log, issue triage, exit criteria and transfer to steady state. | Implemented | hypercare start/exit with exit criteria evidence; incidents as work items | — | — |
+| FR-OPS-009 | Record service acceptance and residual risks accepted by named operational owners. | Implemented | service acceptance by named person; residual risks required with open high defects | — | — |
+| FR-OPS-010 | Link deployed release/build/version to configuration items, requirements and test evidence. | Implemented | configuration_items.release_id, version_label; RTM | — | — |
+
+## FR-CLO
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-CLO-001 | Validate all deliverables, acceptance, contractual obligations, financial close and operational handover. | Implemented | closure gate criteria (milestones, handover, finance) and approval-guarded closed | TC-WF-* | — |
+| FR-CLO-002 | Capture open items, residual risks, technical debt and ongoing actions with receiving owners and due dates. | Implemented | open items, tech_debt_items, residual risks with owners | — | — |
+| FR-CLO-003 | Generate project closure report with objectives, scope delivered, schedule, cost, quality, changes, issues and outcomes. | Implemented | closure_report generator | — | — |
+| FR-CLO-004 | Conduct lessons learned throughout delivery and at closure; classify, validate and make reusable. | Implemented | lessons (validated, reusable, tags) throughout delivery; /api/lessons/relevant | — | — |
+| FR-CLO-005 | Capture supplier performance, team feedback, process effectiveness and improvement opportunities. | Implemented | vendor_reviews, lessons categories | — | — |
+| FR-CLO-006 | Archive project records under retention policy while preserving search and audit access. | Implemented | archived status, soft delete, retention, search and audit preserved | — | — |
+| FR-CLO-007 | Create benefits review schedule and transfer benefit ownership to business. | Implemented | benefits with owner and measurement dates beyond closure | — | — |
+| FR-CLO-008 | Support post-implementation review at configurable intervals and track remedial actions. | Partial | PIR stage in lifecycle template | — | Configurable PIR interval scheduler planned Phase 3 |
+
+## FR-INT
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| FR-INT-001 | Maintain integrated project management plan composed of controlled subsidiary plans and baselines. | Implemented | project_management_plan generator over subsidiary plans + baselines | frs: generators | — |
+| FR-INT-002 | Manage interdependencies between projects, programmes, vendors, releases, shared resources and external events. | Implemented | dependencies (cross-project/vendor/release) | — | — |
+| FR-INT-003 | Maintain integrated change control across all affected baselines and artefacts. | Implemented | integrated change control: impact assessments across areas; re-baseline on approval | frs: re-baseline | — |
+| FR-INT-004 | Provide integrated status, forecast, decision and exception reporting. | Implemented | status report, exception alerts, decisions | — | — |
+| FR-INT-005 | Support phase management, stage transitions, project splitting, merging and work-package transfer with audit. | Partial | stage transitions; work-item transfer between projects (/move, audited) | — | Project split/merge planned Phase 4 |
+| FR-INT-006 | Provide programme-level outcomes, benefits, roadmap, dependency and risk aggregation. | Implemented | programme roll-up of benefits, finance, risks, roadmap | — | — |
+
+## NFR
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| NFR-001 | Availability – Target service availability shall be agreed by service tier; proposed production baseline 99.9% monthly excluding approved maintenance. | Partial | Docker health checks; stateless API | — | Availability is an operational SLO; HA deployment topology to be agreed with hosting (see DEPLOYMENT.md) |
+| NFR-002 | Performance – 95th percentile common page/API response target under 3 seconds at agreed load; long-running operations asynchronous. | Partial | indexed queries; autocannon load harness | — | Agreed-load test to be run in target environment; local evidence in TEST_EVIDENCE.md |
+| NFR-003 | Scalability – Support configurable growth in users, portfolios, projects, work items, documents and audit events; validate load profile. | Partial | pagination, indexes, single schema | — | Load profile validation in target environment |
+| NFR-004 | Concurrency – Support concurrent editing with conflict detection or controlled locking for critical baselines and approvals. | Implemented | row_version optimistic locking; document check-out; baseline locks | TC-SEC-OPT | — |
+| NFR-005 | Recovery – Define RTO/RPO per platform service tier and test backup restoration and DR procedures. | Partial | backup/restore scripts and drill procedure | — | Platform RTO/RPO per tier to be agreed; drill evidence recorded per release |
+| NFR-006 | Security – Complete threat modelling, secure SDLC, vulnerability scanning and independent security testing before production. | Partial | threat model, OWASP ASVS review, npm audit, CSP | — | Independent penetration test required before production |
+| NFR-007 | Accessibility – Target WCAG 2.2 AA for primary user journeys, subject to formal accessibility assessment. | Partial | WCAG 2.2 AA design system, keyboard paths, axe checks | — | Formal accessibility assessment required |
+| NFR-008 | Usability – Responsive desktop/tablet/mobile layouts; minimise duplicate entry; provide contextual help and validation. | Implemented | responsive layouts, inline validation, contextual help | TC-UX-MOB | — |
+| NFR-009 | Compatibility – Support current enterprise-approved versions of major browsers; publish supported-version matrix. | Partial | evergreen Chromium/Firefox/Safari/Edge | — | Supported-version matrix to be published with release |
+| NFR-010 | Maintainability – Modular architecture, documented APIs, automated tests, observability and controlled deployment. | Implemented | modular monolith, OpenAPI, automated tests, CI | — | — |
+| NFR-011 | Interoperability – Import/export common structured formats and maintain documented APIs. | Implemented | CSV/JSON/BPMN import-export; OpenAPI | — | — |
+| NFR-012 | Auditability – Searchable audit records with retention and export controls. | Implemented | searchable audit with export and permission control | TC-AUD-* | — |
+| NFR-013 | Localization – Support configurable language, date, time, number, currency and timezone formats. | Partial | org locale, time zone, currency, date format settings (/api/org/settings) | — | UI translations beyond English planned Phase 4 |
+| NFR-014 | Data integrity – Enforce referential integrity, transaction boundaries, validation and recovery from partial failures. | Implemented | FKs, transactions, strict validation, immutable history triggers | — | — |
+| NFR-015 | Observability – Central logs, metrics, traces, health checks, alerting and integration monitoring. | Partial | structured logs, /health, job_runs, integration dead letters | — | Metrics/traces export (OpenTelemetry) planned Phase 4 |
+| NFR-016 | Portability – Provide complete authorised export of project data, documents and relationships in documented formats. | Implemented | GET /api/projects/:id/export full JSON with relationships, permission-scoped | frs: export | — |
+
+## AC
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| AC-01 | A project can be created from intake, assigned an identifier and progressed through configured gates with required evidence. | Implemented | request → convert (identifier) → gates with evidence | frs: intake; TC-WF-* | — |
+| AC-02 | A user can navigate from portfolio objective to project, requirement, work item, test, acceptance and benefit record. | Implemented | traceability navigation objective→project→requirement→work→test→benefit | TC-BA-RQ | — |
+| AC-03 | Approved scope, schedule and budget baselines are preserved and changed only through authorised change control. | Implemented | baselines immutable, changed only via approved CR | frs: baselines | — |
+| AC-04 | BIA captures impact over time, dependencies, MTPD, RTO/RPO and approvals, and flags invalid or missing data. | Implemented | BIA impacts over time, dependencies, MTPD, RTO/RPO, approvals, validation findings | TC-BIA-* | — |
+| AC-05 | A project manager can create WBS, schedule, dependencies, milestones, assignments and forecasts. | Implemented | WBS, schedule, dependencies (CPM), milestones, assignments, forecast | frs: CPM | — |
+| AC-06 | Resource managers can view demand/capacity and resolve allocation conflicts. | Implemented | capacity heatmap; allocation requests with over-allocation flag | frs: allocation | — |
+| AC-07 | Finance can reconcile project actuals/commitments and review forecast calculations. | Implemented | finance summary reconciliation, period sign-off, forecast calculation | TC-FIN-003; frs: finance | — |
+| AC-08 | A change request produces an impact assessment and updates affected records only after approval. | Implemented | CR → impact assessments; plan/baseline updated only after approval | TC-CHG-*; frs: re-baseline | — |
+| AC-09 | SOP, user guide and process flow can be generated from controlled project/process data and published through approval. | Implemented | SOP, user guide and process flow generated as drafts, published via document approval | frs: generators | — |
+| AC-10 | UAT evidence, defects and business acceptance are traceable to approved requirements. | Implemented | UAT report & RTM trace evidence/defects/acceptance to requirements | frs: generators | — |
+| AC-11 | Go-live cannot be approved where configured mandatory readiness evidence is missing or an authorised exception is absent. | Implemented | go/no-go blocked without evidence unless justified exception; deploy blocked if not ready | TC-REL-*; frs: go/no-go | — |
+| AC-12 | All material approvals, changes, financial adjustments and administrative actions are auditable. | Implemented | all approvals, changes, financial adjustments and admin actions audited | TC-AUD-* | — |
+| AC-13 | AI-generated recommendations cite source records and cannot execute restricted approval actions. | Implemented | AI cites sources; cannot approve/accept/deploy | TC-AI-* | — |
+| AC-14 | Authorised users can export complete project records and associated documents without breaking relationships. | Implemented | project export with documents, versions and relations | frs: export | — |
+
+## PRD
+
+| ID | Requirement (v1.1) | Status | Evidence | Tests | Gap / note |
+|---|---|---|---|---|---|
+| PRD-001 | Product catalogue – Create and maintain a central product register with unique product ID, name, description, type, domain, owner, sponsor, lifecycle status, criticality, business unit, geography, customer segments and l | Implemented | products register: code, type, owner, sponsor, lifecycle, criticality | TC-PRD-* | — |
+| PRD-002 | Product hierarchy – Support product portfolios, product lines, products, modules/components, platforms and services with parent-child relationships and configurable hierarchy. | Implemented | products.parent_id + product_type (portfolio/line/product/module/platform/service) | — | — |
+| PRD-003 | Product profile – Maintain vision, mission, value proposition, target users, personas, jobs-to-be-done, problem statements, differentiators, channels, constraints and product principles. | Implemented | vision, mission, value proposition, segments; personas with JTBD | — | — |
+| PRD-004 | Product ownership – Assign Product Manager, Product Owner, business owner, technical owner, service owner, data owner and commercial owner with effective dates and delegation history. | Implemented | product_roles (7 role types) with effective dates and delegation | — | — |
+| PRD-005 | Idea intake – Provide configurable idea submission forms for employees, customers, partners and management; capture source, attachments, category, expected value, urgency and affected products. | Implemented | ideas with source, category, attachments | — | — |
+| PRD-006 | Idea triage – Support duplicate detection, categorisation, scoring, comments, triage meetings, decisions, rejection reasons, deferral dates and conversion to discovery item. | Implemented | duplicate detection, RICE/WSJF/scoring, comments, deferral, conversion via requests | frs: duplicates | — |
+| PRD-007 | Customer and stakeholder insights – Maintain stakeholder groups, customer segments, personas, interview plans, research notes, feedback themes, consent/permission metadata and evidence links. | Implemented | personas (consent basis), feedback themes, stakeholders | — | — |
+| PRD-008 | Opportunity management – Record opportunities with problem, affected segment, evidence, reach, impact, confidence, strategic fit, urgency, effort and measurable opportunity outcome. | Implemented | ideas reach/impact/confidence/effort, problem, evidence | calc tests | — |
+| PRD-009 | Discovery management – Plan and track discovery activities, hypotheses, assumptions, research tasks, prototypes, experiments, findings, decisions and evidence. | Implemented | hypotheses, experiments, findings and decisions | — | — |
+| PRD-010 | Hypothesis register – Record hypothesis statement, user segment, expected behaviour/outcome, measurement method, baseline, target, owner, status and validation evidence. | Implemented | hypotheses register with segment, measure, baseline, target, actual, status | — | — |
+| PRD-011 | Experiment management – Define experiment design, sample/segment, control and treatment where relevant, duration, guardrails, success thresholds, results and decision. Support ethical and privacy review. | Partial | experiments with hypothesis, metric, success threshold, dates, result, outcome | — | Control/treatment design, sample size and guardrail metrics planned Phase 3 |
+| PRD-012 | Product strategy – Maintain product vision, strategic objectives, strategic themes, positioning, target segments, strategic constraints and alignment to organisation strategy. | Implemented | product vision/strategy fields, objectives/OKRs | — | — |
+| PRD-013 | Product business case – Capture problem/opportunity, options, expected benefits, cost, revenue, savings, TCO, NPV/ROI where applicable, assumptions, sensitivity, risks, funding request and approval. | Implemented | business cases on products (NPV/ROI) | — | — |
+| PRD-014 | Product portfolio – View products by strategic fit, lifecycle, value, cost, risk, technical health, customer impact, revenue and investment; support portfolio review and investment decisions. | Partial | product portfolio views by lifecycle/criticality/health | — | Revenue/value bubble view planned Phase 3 |
+| PRD-015 | Roadmap – Create outcome-based roadmaps by product, portfolio, audience and time horizon; support Now/Next/Later and date-based views, confidence levels, dependencies and scenario alternatives. | Implemented | roadmap Now/Next/Later + dates, confidence | — | — |
+| PRD-016 | Roadmap governance – Version roadmaps, record approvals, changes, rationale, impact, stakeholder communications and superseded commitments. | Implemented | roadmap_versions immutable snapshots with rationale | frs: roadmap versions | — |
+| PRD-017 | Prioritisation – Provide configurable scoring models such as RICE, WSJF, MoSCoW, value-versus-effort and weighted scorecards; allow custom weights, explainable score calculations and override audit trail. | Implemented | RICE, WSJF, MoSCoW and configurable weighted scorecards with audited overrides | frs: scoring | — |
+| PRD-018 | Outcome and OKR alignment – Link product objectives and key results to corporate objectives, measurable outcomes, initiatives, releases and dashboards; track baseline, target, actual and confidence. | Implemented | key results linked to objectives, products, releases | — | — |
+| PRD-019 | Product requirements – Capture product requirements, user stories, acceptance criteria, business rules, non-functional requirements, personas, source, rationale, priority and traceability. | Implemented | product requirements with acceptance criteria, personas, source, version | — | — |
+| PRD-020 | Backlog management – Manage themes, initiatives, epics, capabilities, features, stories, defects, technical enablers and research tasks; support hierarchy, dependencies, estimation and prioritisation. | Implemented | work types theme/epic/feature/story/defect/technical_enabler/research | — | — |
+| PRD-021 | Product-to-project linkage – Convert approved initiatives into projects/programmes or link to existing delivery work; retain two-way traceability between product outcomes and project scope/deliverables. | Implemented | project_products M:N; request conversion links product | TC-PRD-001 | — |
+| PRD-022 | Continuous delivery linkage – Support product teams delivering through persistent backlogs and releases without requiring a new project for every change. | Implemented | product-context work and releases without a project | TC-WRK-001 | — |
+| PRD-023 | Release management – Plan releases, versions, scope, release notes, environments, deployment windows, dependencies, approvals, readiness checklist, rollback and release outcome. | Implemented | releases with notes, environments, window, readiness, rollback | TC-REL-* | — |
+| PRD-024 | Launch management – Manage launch plans, target audiences, channels, communications, training, sales/operations enablement, support readiness, FAQs, launch risks and post-launch review. | Implemented | launch_plans (audience, channels, comms, training, support readiness, FAQ, risks) | — | — |
+| PRD-025 | Adoption management – Track eligible users, active users, activation, onboarding completion, feature adoption, retention, engagement and segment-level adoption against targets. | Partial | product_metrics + metric_values with segments | frs: product health | Pre-defined adoption funnel view planned Phase 3 |
+| PRD-026 | Product analytics – Define metrics, event taxonomy, data source, owner, calculation, refresh frequency, baseline, target and thresholds; display trends and segment breakdowns. | Implemented | metric definitions (source, owner, refresh, baseline, target, direction) + series | frs: product health | — |
+| PRD-027 | Voice of customer – Consolidate feedback, complaints, surveys, support tickets, app reviews and relationship-manager input; classify themes and link feedback to opportunities and backlog. | Implemented | feedback register with source/theme, linked to ideas | — | — |
+| PRD-028 | Product health – Provide configurable health score using adoption, customer satisfaction, reliability, security, cost, delivery predictability, technical debt and business performance. | Implemented | /api/products/:id/health configurable, unknown when no data | frs: product health | — |
+| PRD-029 | Technical debt – Register technical debt items with risk, impact, remediation estimate, affected components, owner and planned capacity; report debt trend and ageing. | Implemented | tech_debt_items register with risk, estimate, component, quarter | — | — |
+| PRD-030 | Product financials – Track product budget, operating cost, capital cost, cloud/vendor cost, revenue, margin, unit economics, forecast, actuals and allocation rules. | Implemented | product-context budgets/costs/benefits roll-up | TC-FIN-* | — |
+| PRD-031 | Pricing and commercial model – Where applicable, record pricing models, tiers, packages, discounts, contracts, monetisation assumptions, approvals and effective dates; restrict sensitive commercial access. | Implemented | pricing_plans (restricted by default) | — | — |
+| PRD-032 | Product risk and compliance – Maintain product-level risks covering privacy, cybersecurity, regulatory, legal, accessibility, third-party, data, operational, reputational and continuity concerns. | Implemented | product risks/controls/obligations | — | — |
+| PRD-033 | Product BIA – Capture critical business services supported, impact of product unavailability, maximum tolerable period of disruption, RTO/RPO requirements, dependencies, workarounds, recovery priorities and evidence; lin | Implemented | BIA on products (MTPD, RTO/RPO) | TC-BIA-* | — |
+| PRD-034 | Operational readiness – Require service owner, support hours, service levels, monitoring, alerting, runbooks, SOPs, user guides, knowledge articles, backup/recovery, access model and support escalation before production  | Implemented | release readiness and service acceptance | TC-REL-* | — |
+| PRD-035 | Product documentation – Maintain version-controlled product charter, PRD, UX artefacts, architecture, API specifications, data dictionary, SOP, user guide, process flow, release notes and support documentation. | Implemented | product-context documents with versions | — | — |
+| PRD-036 | Product change management – Assess proposed product changes for customer, scope, roadmap, cost, schedule, architecture, security, compliance, BIA, operations and benefits impact; route through configurable approvals. | Implemented | product change requests with BIA impact for critical products | TC-CHG-* | — |
+| PRD-037 | Product lifecycle review – Schedule periodic reviews and trigger reviews on poor performance, major incidents, regulatory changes, vendor end-of-life, cost overruns or strategic shifts. | Implemented | next_review_date with review-due escalation | — | — |
+| PRD-038 | Sunset and retirement – Manage end-of-life decision, customer notice, migration, data export/retention, contract/vendor closure, decommission, access removal, archive and residual risk acceptance. | Partial | lifecycle stage retire/sunset; project relationship retires | — | Sunset checklist template planned Phase 3 |
+| PRD-039 | Product governance – Support product councils, portfolio boards, design authority and investment committees with agenda, papers, decisions, actions, minutes and decision history. | Implemented | meetings/decisions with product contexts; governance workflows | — | — |
+| PRD-040 | Product reporting – Provide executive, portfolio, product, discovery, roadmap, delivery, adoption, financial, risk and health dashboards with role-based filtering and export. | Partial | product workspace dashboards (health, roadmap, discovery, delivery) | — | Role-based product reporting pack planned Phase 3 |
+| PRD-041 | Product collaboration – Provide comments, mentions, tasks, approvals, decision logs, meeting notes, notifications and subscriptions linked to product records. | Implemented | comments, mentions, watchers, notifications on products | frs: comments | — |
+| PRD-042 | Product templates – Allow configurable templates for product charter, discovery brief, business case, PRD, roadmap, experiment, launch plan, health review and retirement plan. | Partial | generators + workflow templates | — | Template editor planned Phase 3 |
+| PRD-043 | Product access control – Apply role-based and attribute-based permissions to product, financial, customer research, commercial, security and personal data. | Implemented | RBAC + ABAC (restricted pricing/personas), explicit-only sensitive perms | TC-SEC-* | — |
+| PRD-044 | Product audit trail – Log creation, updates, status changes, score changes, roadmap changes, approvals, access-sensitive actions and data exports with actor and timestamp. | Implemented | audit of score changes, roadmap versions, exports | TC-AUD-* | — |
+| PRD-045 | AI product assistant – Assist with idea clustering, research synthesis, draft personas, requirement quality checks, roadmap options, release summaries and product health insights; require human review and preserve source | Implemented | AI idea clustering (/api/ai/idea-clusters, read-only), drafts require acceptance | frs: clustering | — |

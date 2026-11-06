@@ -1,2 +1,34 @@
-# PMO
-Project Management
+# Meridian – Enterprise Strategy, Portfolio, Product, Project & Work Platform
+
+A unified, governed platform from strategy to service: portfolios, programmes, projects, **products**, operational work, **BIA & resilience**, finance & benefits, resources, RAID & change, quality & release, vendors, GRC, documents and a controlled AI assistant – on one shared data model.
+
+![Command centre](docs/screenshots/01-command-centre.jpg)
+
+## Run it (Docker)
+```bash
+./start.sh
+```
+Then open http://localhost:8080. The first run writes `.env` with random secrets and (by default) loads a **synthetic** demo organisation; the demo password is printed. Sign in as e.g. `ceo@demo.example`, `pmo@demo.example`, `product@demo.example`, `bcm@demo.example`, `finance@demo.example` or `admin@demo.example`. For production settings see `docs/deployment/DEPLOYMENT.md`.
+
+## What's inside
+| Path | Contents |
+|---|---|
+| `backend/` | Fastify 5 + TypeScript API, SQL migrations, domain services, AI layer, integrations, tests |
+| `frontend/` | React 18 + Vite SPA, Meridian design system, charts, 25 workspaces, nginx config |
+| `docker-compose.yml`, `start.sh` | db + api + web stack with health checks |
+| `docs/` | Executive summary, research, Master FRS & traceability, architecture (C4), ERD, API, security, UX, testing evidence, deployment, user guide, SOPs, ADRs, decisions for approval, implementation plan |
+| `scripts/screenshots.mjs` | Visual QA capture |
+| `CLAUDE.md`, `.claude/` | Claude Code operating model: rules, skills, subagents, hooks |
+
+Start with **[docs/EXECUTIVE_SUMMARY.md](docs/EXECUTIVE_SUMMARY.md)** and **[docs/decisions/DECISIONS_FOR_APPROVAL.md](docs/decisions/DECISIONS_FOR_APPROVAL.md)**.
+
+## Develop
+```bash
+docker run -d --name pmo-db -e POSTGRES_PASSWORD=devpass -p 5433:5432 postgres:16-alpine
+cd backend && npm ci && DATABASE_URL=postgres://postgres:devpass@localhost:5433/postgres JWT_SECRET=$(openssl rand -hex 24) SEED_DEMO=true DEMO_PASSWORD=Demo-Pass-2026 npm run dev
+cd frontend && npm ci && API_URL=http://localhost:8080 npm run dev
+```
+Tests: `cd backend && TEST_DATABASE_URL=postgres://postgres:devpass@localhost:5433/pmo_test npm test` (62 tests).
+
+## Honesty notes
+Integrations other than the generic signed webhook are **mock** and labelled as such. AI runs in **local rules mode** unless an external provider is explicitly enabled. The original FRS v1.1 was not available; see GAP-000. Framework alignment (ISO, PMBOK, ITIL…) is not a certification claim.
