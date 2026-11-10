@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+coverage/
+docs/screenshots/*.tmp.png
+backups/
+__pycache__/

@@ -1,0 +1,2095 @@
+[
+{
+"id": "GO-01",
+"cols": [
+"Single source of truth",
+"All active projects have one unique project record and linked registers."
+]
+},
+{
+"id": "GO-02",
+"cols": [
+"Governance consistency",
+"Configured stage gates, required evidence and approvals are enforced."
+]
+},
+{
+"id": "GO-03",
+"cols": [
+"Delivery predictability",
+"Baseline, forecast, actuals and variance are visible for scope, schedule and cost."
+]
+},
+{
+"id": "GO-04",
+"cols": [
+"Business value",
+"Every approved project has measurable outcomes, benefit owners and review dates."
+]
+},
+{
+"id": "GO-05",
+"cols": [
+"Operational continuity",
+"Business-critical projects capture BIA, recovery and service transition requirements."
+]
+},
+{
+"id": "GO-06",
+"cols": [
+"Resource transparency",
+"Capacity, assignment, availability and cross-project conflicts can be viewed."
+]
+},
+{
+"id": "GO-07",
+"cols": [
+"Traceability",
+"Objectives map to requirements, deliverables, test evidence, acceptance and benefits."
+]
+},
+{
+"id": "GO-08",
+"cols": [
+"Auditability",
+"Material changes, approvals and decisions are attributable and time-stamped."
+]
+},
+{
+"id": "GO-09",
+"cols": [
+"Knowledge reuse",
+"Approved templates, SOPs, guides, process flows and lessons learned are searchable."
+]
+},
+{
+"id": "GO-10",
+"cols": [
+"AI productivity",
+"AI-generated artefacts are sourced, reviewable, versioned and approval-controlled."
+]
+},
+{
+"id": "FR-PORT-001",
+"cols": [
+"Maintain portfolio hierarchy of strategic objectives, portfolios, programmes, projects, products and initiatives.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-002",
+"cols": [
+"Allow projects to map to one or more strategic objectives, outcomes, KPIs and investment themes.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-003",
+"cols": [
+"Provide intake pipeline states: submitted, screening, discovery, proposed, approved, deferred, rejected, active, suspended, closed.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-004",
+"cols": [
+"Score and rank proposals using configurable value, urgency, strategic fit, risk, cost, capacity and regulatory drivers.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-005",
+"cols": [
+"Support portfolio what-if scenarios for funding, prioritisation, resource constraints and sequencing.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-006",
+"cols": [
+"Show portfolio heatmaps by health, status, business unit, sponsor, delivery method, budget, risk and strategic objective.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-007",
+"cols": [
+"Identify cross-project dependencies, shared milestones, duplicated scope and resource conflicts.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-008",
+"cols": [
+"Maintain portfolio-level benefits, investment, forecast and delivery confidence.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-009",
+"cols": [
+"Support portfolio review cycles, decisions, minutes, actions and re-prioritisation history.",
+"Must"
+]
+},
+{
+"id": "FR-PORT-010",
+"cols": [
+"Provide configurable portfolio thresholds and exception alerts.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-001",
+"cols": [
+"Provide configurable request forms by request type: new project, enhancement, operational improvement, compliance, infrastructure, product and emergency work.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-002",
+"cols": [
+"Capture problem/opportunity, current state, proposed outcome, urgency, sponsor, requester, department, impacted customers and target date.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-003",
+"cols": [
+"Detect possible duplicate requests using title, description, system, business process and related project references.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-004",
+"cols": [
+"Generate a unique project/request identifier using configurable numbering rules.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-005",
+"cols": [
+"Support triage, clarification, assessment, rejection, deferral and conversion into a project.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-006",
+"cols": [
+"Generate a project charter with purpose, objectives, measurable success criteria, scope boundaries, assumptions, constraints, high-level risks, budget authority and PM appointment.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-007",
+"cols": [
+"Record project classification, complexity, criticality, regulatory category, delivery approach and governance tier.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-008",
+"cols": [
+"Maintain project lifecycle status, phase, owner, sponsor, business owner, PM, start/end dates and current forecast.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-009",
+"cols": [
+"Support project suspension, restart, cancellation, termination and archival with reason and approvals.",
+"Must"
+]
+},
+{
+"id": "FR-INIT-010",
+"cols": [
+"Allow project creation from approved templates, prior projects or programme work packages.",
+"Must"
+]
+},
+{
+"id": "FR-BC-001",
+"cols": [
+"Capture strategic rationale, problem statement, opportunity, options including do-nothing, recommended option and decision rationale.",
+"Must"
+]
+},
+{
+"id": "FR-BC-002",
+"cols": [
+"Capture financial and non-financial benefits, dis-benefits, costs, assumptions, dependencies, constraints and risks.",
+"Must"
+]
+},
+{
+"id": "FR-BC-003",
+"cols": [
+"Calculate configurable NPV, ROI, payback period, TCO, IRR and cost-benefit ratios where input data is available.",
+"Must"
+]
+},
+{
+"id": "FR-BC-004",
+"cols": [
+"Support sensitivity analysis and best/base/worst-case scenarios.",
+"Must"
+]
+},
+{
+"id": "FR-BC-005",
+"cols": [
+"Record feasibility across business, technical, operational, legal, security, data, commercial and resource dimensions.",
+"Must"
+]
+},
+{
+"id": "FR-BC-006",
+"cols": [
+"Assign a named benefit owner, baseline measure, target, measurement method, due date and evidence source to each benefit.",
+"Must"
+]
+},
+{
+"id": "FR-BC-007",
+"cols": [
+"Version business cases and preserve approved assumptions and financial baselines.",
+"Must"
+]
+},
+{
+"id": "FR-BC-008",
+"cols": [
+"Generate business case approval packs and decision records.",
+"Must"
+]
+},
+{
+"id": "FR-BA-001",
+"cols": [
+"Maintain business context, capability map, current-state and future-state process descriptions.",
+"Must"
+]
+},
+{
+"id": "FR-BA-002",
+"cols": [
+"Model processes using BPMN-compatible notation or an exportable process representation.",
+"Must"
+]
+},
+{
+"id": "FR-BA-003",
+"cols": [
+"Capture stakeholder needs, business requirements, stakeholder requirements, functional requirements and non-functional requirements.",
+"Must"
+]
+},
+{
+"id": "FR-BA-004",
+"cols": [
+"Assign unique requirement IDs, source, owner, priority, rationale, acceptance criteria, status and version.",
+"Must"
+]
+},
+{
+"id": "FR-BA-005",
+"cols": [
+"Support requirement elicitation sessions, workshops, interviews, surveys, observations and document analysis.",
+"Must"
+]
+},
+{
+"id": "FR-BA-006",
+"cols": [
+"Support requirement prioritisation using MoSCoW, weighted scoring or configurable schemes.",
+"Must"
+]
+},
+{
+"id": "FR-BA-007",
+"cols": [
+"Maintain bidirectional traceability from business objective to requirement, design, work item, test case, defect, deliverable and benefit.",
+"Must"
+]
+},
+{
+"id": "FR-BA-008",
+"cols": [
+"Record requirement review, approval, baselining and change history.",
+"Must"
+]
+},
+{
+"id": "FR-BA-009",
+"cols": [
+"Generate BRD, FRS, FRD, user stories, use cases, process specifications and requirements traceability matrix.",
+"Must"
+]
+},
+{
+"id": "FR-BA-010",
+"cols": [
+"Support requirement decomposition, parent-child relationships, duplicates, conflicts and coverage analysis.",
+"Must"
+]
+},
+{
+"id": "FR-BA-011",
+"cols": [
+"Capture interface, data, migration, reporting, security, accessibility, performance and operational requirements.",
+"Must"
+]
+},
+{
+"id": "FR-BA-012",
+"cols": [
+"Record requirement acceptance and verification evidence.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-001",
+"cols": [
+"Define project scope statement, objectives, inclusions, exclusions, constraints, assumptions and boundaries.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-002",
+"cols": [
+"Create hierarchical WBS with work packages, control accounts, deliverables and acceptance criteria.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-003",
+"cols": [
+"Support deliverable register with owner, due date, quality criteria, version, evidence and acceptance status.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-004",
+"cols": [
+"Link scope items to requirements, schedule activities, cost estimates, risks, contracts and test evidence.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-005",
+"cols": [
+"Baseline scope and maintain approved revisions.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-006",
+"cols": [
+"Validate deliverables with authorised business owners and record acceptance/rejection.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-007",
+"cols": [
+"Detect unapproved scope additions and incomplete scope coverage.",
+"Must"
+]
+},
+{
+"id": "FR-SCP-008",
+"cols": [
+"Support product backlog, epics, features, stories and sprint scope for adaptive projects.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-001",
+"cols": [
+"Create activities from WBS, backlog, templates or imports.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-002",
+"cols": [
+"Maintain activity ID, description, owner, duration, effort, calendar, start/finish, constraint, status and completion rules.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-003",
+"cols": [
+"Support finish-to-start, start-to-start, finish-to-finish and start-to-finish dependencies with leads/lags.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-004",
+"cols": [
+"Calculate earliest/latest dates, float, critical path and forecast finish for supported scheduling models.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-005",
+"cols": [
+"Provide Gantt, milestone, calendar, dependency network and roadmap views.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-006",
+"cols": [
+"Support working calendars, holidays, time zones, working patterns and project-specific calendars.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-007",
+"cols": [
+"Support analogous, parametric, bottom-up, three-point and expert-judgement estimates with assumptions and confidence.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-008",
+"cols": [
+"Maintain schedule baseline, current plan, forecast and actual dates separately.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-009",
+"cols": [
+"Calculate schedule variance, SPI and milestone slippage where baseline and actual data exist.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-010",
+"cols": [
+"Support schedule compression options, resource levelling and what-if scenarios.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-011",
+"cols": [
+"Record planning assumptions, constraints, contingency and schedule reserve.",
+"Must"
+]
+},
+{
+"id": "FR-SCH-012",
+"cols": [
+"Support agile iterations, sprint planning, velocity, release planning and backlog burn-up/down.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-001",
+"cols": [
+"Provide work hierarchy: portfolio initiative, project, phase, deliverable, WBS work package, epic, feature, story, task, subtask and action.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-002",
+"cols": [
+"Assign one accountable owner and optional collaborators, watchers and approvers to each work item.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-003",
+"cols": [
+"Capture status, priority, planned/actual dates, effort, estimate, remaining work, dependencies, acceptance criteria and completion evidence.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-004",
+"cols": [
+"Support configurable Kanban boards, lists, calendars, Gantt-linked tasks and sprint boards.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-005",
+"cols": [
+"Support recurring tasks, checklists, templates, bulk updates and task cloning.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-006",
+"cols": [
+"Allow comments, mentions, attachments, activity history and decision links.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-007",
+"cols": [
+"Provide personal work queue, overdue list, upcoming deadlines and workload view.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-008",
+"cols": [
+"Support blockers, impediments, escalation, reassignment and delegation with history.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-009",
+"cols": [
+"Require evidence or acceptance before configured task/deliverable completion.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-010",
+"cols": [
+"Aggregate progress using configurable weighted rules; do not equate number of completed tasks with project progress by default.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-011",
+"cols": [
+"Support worklogs, time entries, estimates and approval where enabled.",
+"Must"
+]
+},
+{
+"id": "FR-WRK-012",
+"cols": [
+"Integrate external work items from tools such as Jira, Git platforms or service management systems without duplicating master project identity.",
+"Must"
+]
+},
+{
+"id": "FR-RES-001",
+"cols": [
+"Maintain resource profiles with role, department, skills, proficiency, location, manager, employment/vendor type and availability.",
+"Must"
+]
+},
+{
+"id": "FR-RES-002",
+"cols": [
+"Maintain resource calendars, leave/absence availability where integrated, capacity and working hours.",
+"Must"
+]
+},
+{
+"id": "FR-RES-003",
+"cols": [
+"Create resource demand by role, skill, period, effort and project phase.",
+"Must"
+]
+},
+{
+"id": "FR-RES-004",
+"cols": [
+"Allocate named or role-based resources with planned effort, percentage allocation and start/end dates.",
+"Must"
+]
+},
+{
+"id": "FR-RES-005",
+"cols": [
+"Detect over-allocation, under-utilisation, conflicting commitments and skill gaps.",
+"Must"
+]
+},
+{
+"id": "FR-RES-006",
+"cols": [
+"Support resource request, manager review, allocation approval and release workflows.",
+"Must"
+]
+},
+{
+"id": "FR-RES-007",
+"cols": [
+"Provide team capacity, utilisation, demand-versus-capacity and forecast dashboards.",
+"Must"
+]
+},
+{
+"id": "FR-RES-008",
+"cols": [
+"Support RACI / responsibility assignment matrix by deliverable, process, decision and work package.",
+"Must"
+]
+},
+{
+"id": "FR-RES-009",
+"cols": [
+"Maintain team directory, project organisation chart, contact details and escalation path.",
+"Must"
+]
+},
+{
+"id": "FR-RES-010",
+"cols": [
+"Support onboarding/offboarding checklists, access requests, knowledge transfer and role handover.",
+"Must"
+]
+},
+{
+"id": "FR-RES-011",
+"cols": [
+"Support team health, feedback, lessons and skills development actions without becoming an employee performance appraisal system.",
+"Must"
+]
+},
+{
+"id": "FR-RES-012",
+"cols": [
+"Support vendor and contingent team members with restricted access and contract end dates.",
+"Must"
+]
+},
+{
+"id": "FR-STK-001",
+"cols": [
+"Maintain stakeholder register with organisation, role, influence, interest, impact, position, needs and contact channel.",
+"Must"
+]
+},
+{
+"id": "FR-STK-002",
+"cols": [
+"Map stakeholders to projects, processes, requirements, decisions and benefits.",
+"Must"
+]
+},
+{
+"id": "FR-STK-003",
+"cols": [
+"Create stakeholder engagement assessment and action plan.",
+"Must"
+]
+},
+{
+"id": "FR-STK-004",
+"cols": [
+"Maintain communication plan with audience, message, owner, channel, frequency and evidence.",
+"Must"
+]
+},
+{
+"id": "FR-STK-005",
+"cols": [
+"Schedule and record project meetings, agendas, attendance, minutes, decisions and actions.",
+"Must"
+]
+},
+{
+"id": "FR-STK-006",
+"cols": [
+"Generate action items from meeting minutes and link them to work items and owners.",
+"Must"
+]
+},
+{
+"id": "FR-STK-007",
+"cols": [
+"Support announcements, targeted updates, acknowledgement tracking and communication history.",
+"Must"
+]
+},
+{
+"id": "FR-STK-008",
+"cols": [
+"Provide stakeholder feedback, issue escalation and engagement trend reporting.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-001",
+"cols": [
+"Maintain separate but linked risk, assumption, issue, dependency and decision registers.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-002",
+"cols": [
+"Capture cause, event, effect, category, owner, date raised, due date, status and response.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-003",
+"cols": [
+"Support configurable probability-impact scoring, exposure, urgency, proximity and risk velocity.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-004",
+"cols": [
+"Support threat and opportunity responses, contingency, trigger, residual risk and secondary risk.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-005",
+"cols": [
+"Support quantitative analysis such as expected monetary value, sensitivity and Monte Carlo integration where enabled.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-006",
+"cols": [
+"Link risks to objectives, WBS, schedule, budget, requirements, vendors, BIA and controls.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-007",
+"cols": [
+"Escalate risks/issues based on thresholds, age, exposure and missed response dates.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-008",
+"cols": [
+"Maintain risk review history, acceptance rationale and approval.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-009",
+"cols": [
+"Provide project and portfolio risk heatmaps, top risks and trend reports.",
+"Must"
+]
+},
+{
+"id": "FR-RAID-010",
+"cols": [
+"Convert identified issues into actions/work items and track closure evidence.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-001",
+"cols": [
+"Create project quality management plan with standards, roles, assurance activities and acceptance criteria.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-002",
+"cols": [
+"Maintain quality metrics, checklists, review schedules and evidence.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-003",
+"cols": [
+"Support quality assurance reviews, process audits, peer reviews and deliverable inspections.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-004",
+"cols": [
+"Record non-conformances, root cause, corrective/preventive actions and effectiveness checks.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-005",
+"cols": [
+"Link quality criteria to requirements, deliverables, test cases and acceptance decisions.",
+"Must"
+]
+},
+{
+"id": "FR-QLT-006",
+"cols": [
+"Provide quality gate status and unresolved quality exceptions.",
+"Must"
+]
+},
+{
+"id": "FR-TST-001",
+"cols": [
+"Maintain test strategy, test plan, test environment, entry/exit criteria and test roles.",
+"Must"
+]
+},
+{
+"id": "FR-TST-002",
+"cols": [
+"Support test levels and types including unit evidence, system integration, regression, performance, security, accessibility, migration and UAT.",
+"Must"
+]
+},
+{
+"id": "FR-TST-003",
+"cols": [
+"Create test suites, scenarios, cases, steps, expected results, actual results and evidence attachments.",
+"Must"
+]
+},
+{
+"id": "FR-TST-004",
+"cols": [
+"Trace test cases to requirements, risks, processes and acceptance criteria.",
+"Must"
+]
+},
+{
+"id": "FR-TST-005",
+"cols": [
+"Record execution status, tester, execution date, environment, build/version and result.",
+"Must"
+]
+},
+{
+"id": "FR-TST-006",
+"cols": [
+"Manage defects with severity, priority, owner, root cause, status, fix version, retest and closure evidence.",
+"Must"
+]
+},
+{
+"id": "FR-TST-007",
+"cols": [
+"Support defect triage, waiver, known error and residual risk acceptance.",
+"Must"
+]
+},
+{
+"id": "FR-TST-008",
+"cols": [
+"Calculate requirement coverage, pass rate, defect leakage, reopen rate and outstanding severity.",
+"Must"
+]
+},
+{
+"id": "FR-TST-009",
+"cols": [
+"Generate SIT/UAT reports, test completion reports and business sign-off packs.",
+"Must"
+]
+},
+{
+"id": "FR-TST-010",
+"cols": [
+"Separate PMO governance and evidence oversight from business-owned UAT execution where the organisation assigns execution to Operations or business users.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-001",
+"cols": [
+"Support project change requests for scope, requirements, schedule, cost, resources, quality, risk, procurement and baselines.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-002",
+"cols": [
+"Capture change origin, reason, description, urgency, alternatives, impact, recommendation and requested effective date.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-003",
+"cols": [
+"Require integrated impact assessment across scope, schedule, finance, resources, benefits, risk, BIA, architecture, security, operations and contracts as applicable.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-004",
+"cols": [
+"Route changes using configurable authority thresholds and review roles.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-005",
+"cols": [
+"Maintain change log with submitted, assessed, approved, rejected, deferred, implemented and verified states.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-006",
+"cols": [
+"Prevent approved baseline changes until the change is authorised and implementation is confirmed.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-007",
+"cols": [
+"Support emergency change path with retrospective review and audit.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-008",
+"cols": [
+"Maintain configuration item register, versions, environments, release references and relationships.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-009",
+"cols": [
+"Link changes to affected requirements, documents, tasks, tests, risks, costs and releases.",
+"Must"
+]
+},
+{
+"id": "FR-CHG-010",
+"cols": [
+"Report change volume, reasons, approval time, rejected changes and cumulative baseline movement.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-001",
+"cols": [
+"Assess organisational readiness and change magnitude at initiation and refresh at defined gates.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-002",
+"cols": [
+"Identify impacted roles, teams, locations, processes, policies, systems and customer groups.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-003",
+"cols": [
+"Capture change impacts across people, process, technology, data, policy, culture and service.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-004",
+"cols": [
+"Maintain change strategy, sponsor coalition, change network/champions and engagement plan.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-005",
+"cols": [
+"Create communication, training, coaching, resistance management and adoption plans.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-006",
+"cols": [
+"Maintain training needs analysis, learning materials, attendance, assessment and competency evidence.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-007",
+"cols": [
+"Measure awareness, readiness, adoption, proficiency, usage and business outcome indicators.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-008",
+"cols": [
+"Manage resistance/issues, feedback, corrective actions and reinforcement.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-009",
+"cols": [
+"Transfer ongoing adoption ownership to business operations at closure.",
+"Must"
+]
+},
+{
+"id": "FR-OCM-010",
+"cols": [
+"Distinguish organisational change management from formal project change requests; link both where one triggers the other.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-001",
+"cols": [
+"Maintain approved budget by fiscal period, cost category, work package, department, funding source and currency.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-002",
+"cols": [
+"Support cost estimates, estimate basis, confidence range, contingency and management reserve.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-003",
+"cols": [
+"Separate original budget, approved changes, current budget, commitments, actuals, accruals, forecast and estimate at completion.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-004",
+"cols": [
+"Support CAPEX/OPEX classification, internal labour, vendor, licence, infrastructure, travel, training, tax and other cost categories.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-005",
+"cols": [
+"Record purchase requisitions, purchase orders, contract commitments, invoices and payment milestones or integrate with finance/procurement systems.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-006",
+"cols": [
+"Support monthly cost capture, actual cost import, reconciliation and finance sign-off.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-007",
+"cols": [
+"Calculate cost variance, CPI, EAC, ETC, VAC, burn rate and cash flow where required inputs exist.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-008",
+"cols": [
+"Support multi-currency budgets with configurable exchange-rate source/date and local reporting currency.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-009",
+"cols": [
+"Maintain funding approvals, release schedules, funding restrictions and budget owners.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-010",
+"cols": [
+"Track benefits, dis-benefits, revenue, savings, efficiency, risk reduction and non-financial outcomes.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-011",
+"cols": [
+"Compare planned and realised benefits with baseline, target, actual, measurement date and evidence.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-012",
+"cols": [
+"Provide forecast scenarios, cost-to-complete and financial exception alerts.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-013",
+"cols": [
+"Restrict financial visibility by role, project, department and sensitivity classification.",
+"Must"
+]
+},
+{
+"id": "FR-FIN-014",
+"cols": [
+"Preserve financial period locks and correction/reversal history; never silently overwrite approved actuals.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-001",
+"cols": [
+"Maintain procurement plan, sourcing strategy, make/buy decisions and procurement schedule.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-002",
+"cols": [
+"Maintain vendor register, due diligence, risk rating, contacts, service category and approved status.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-003",
+"cols": [
+"Record RFIs/RFQs/RFPs, evaluation criteria, bids, scoring, recommendation and approvals.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-004",
+"cols": [
+"Maintain contract scope, value, currency, term, renewal, obligations, milestones, SLAs, warranties and liabilities.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-005",
+"cols": [
+"Track vendor deliverables, acceptance, invoice milestones, service levels, issues and performance.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-006",
+"cols": [
+"Manage contract changes, claims, disputes, renewals and closure.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-007",
+"cols": [
+"Link vendor dependencies and concentration risk to project RAID.",
+"Must"
+]
+},
+{
+"id": "FR-PROC-008",
+"cols": [
+"Maintain procurement audit evidence and conflict-of-interest declarations where required.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-001",
+"cols": [
+"Provide BIA questionnaires tailored by project type, business process and criticality.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-002",
+"cols": [
+"Identify critical business services, processes, products, stakeholders, locations and supporting applications.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-003",
+"cols": [
+"Capture impact dimensions: financial, operational, customer, regulatory/legal, safety, reputation, data and strategic.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-004",
+"cols": [
+"Assess disruption impacts at configurable time intervals and calculate/record MTPD.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-005",
+"cols": [
+"Capture RTO, RPO, minimum service level, maximum data loss, workaround duration and recovery dependencies.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-006",
+"cols": [
+"Identify upstream/downstream dependencies, people, facilities, suppliers, systems, data and communications.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-007",
+"cols": [
+"Record peak periods, seasonal criticality, manual workaround and resource constraints.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-008",
+"cols": [
+"Link BIA outcomes to risk register, architecture, backup, DR, service continuity and go-live readiness.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-009",
+"cols": [
+"Require business process owner validation and appropriate continuity/operations review.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-010",
+"cols": [
+"Version BIA, record reassessment triggers and preserve previous approved assessments.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-011",
+"cols": [
+"Support business continuity strategy, recovery playbooks, contact trees and exercise evidence.",
+"Must"
+]
+},
+{
+"id": "FR-BIA-012",
+"cols": [
+"Do not infer RTO/RPO or criticality automatically; AI may suggest values but authorised owners must validate them.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-001",
+"cols": [
+"Provide project document repository with folders, metadata, tags, classification, owner, version, status and retention category.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-002",
+"cols": [
+"Support document templates, controlled numbering, document types, review cycles and approval workflows.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-003",
+"cols": [
+"Maintain version history, compare versions, check-in/check-out or equivalent edit locking and superseded status.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-004",
+"cols": [
+"Support controlled generation of charter, business case, project plan, BRD, FRS, FRD, RAID, status report, minutes, test plan, UAT report and closure report.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-005",
+"cols": [
+"Generate SOPs from approved process steps, roles, controls, exceptions, evidence and revision history.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-006",
+"cols": [
+"Generate user guides with role-specific instructions, screenshots, field descriptions, prerequisites and troubleshooting.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-007",
+"cols": [
+"Generate process flows from approved process models and export to common diagram formats.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-008",
+"cols": [
+"Maintain document relationships to requirements, deliverables, decisions, risks, changes, tests and approvals.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-009",
+"cols": [
+"Support PDF, DOCX, XLSX, PPTX, CSV, images and common diagram formats subject to safe file handling.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-010",
+"cols": [
+"Support full-text search, filters, OCR/indexing where enabled and access-aware results.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-011",
+"cols": [
+"Maintain document review comments, redlines, approval status, distribution list and acknowledgement.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-012",
+"cols": [
+"Support retention, legal hold, archive, export and controlled disposal.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-013",
+"cols": [
+"Ensure generated documents identify source project, version, generation date, owner, status and approval state.",
+"Must"
+]
+},
+{
+"id": "FR-DOC-014",
+"cols": [
+"Do not represent AI-generated or draft documents as approved or controlled until the defined review and approval process is complete.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-001",
+"cols": [
+"Schedule meetings linked to projects, phases, gates, risks, changes or workstreams.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-002",
+"cols": [
+"Maintain agenda, attendees, apologies, materials, meeting type and confidentiality.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-003",
+"cols": [
+"Capture minutes, decisions, actions, owners, due dates and dependencies.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-004",
+"cols": [
+"Support decision register with options, rationale, decision maker, date, conditions and evidence.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-005",
+"cols": [
+"Track action overdue status, reminders, escalation and closure evidence.",
+"Must"
+]
+},
+{
+"id": "FR-MTG-006",
+"cols": [
+"Generate minutes and action logs from structured meeting data and optional AI transcription input.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-001",
+"cols": [
+"Maintain release/deployment plan, release scope, deployment window, dependencies and accountable leads.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-002",
+"cols": [
+"Capture cutover checklist, migration steps, sequencing, validation and rollback criteria.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-003",
+"cols": [
+"Require backup/restore, monitoring, security, capacity, access, support and business validation evidence as applicable.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-004",
+"cols": [
+"Maintain service ownership, support model, service desk routing, SLA/OLA, escalation and vendor support contacts.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-005",
+"cols": [
+"Capture runbooks, SOPs, user guides, architecture, configuration, known errors and support knowledge.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-006",
+"cols": [
+"Assess operational readiness, staffing, training, licences, support access, monitoring and continuity.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-007",
+"cols": [
+"Record go/no-go decision, approvers, conditions, time, evidence and rollback decision.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-008",
+"cols": [
+"Support hypercare period, incident log, issue triage, exit criteria and transfer to steady state.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-009",
+"cols": [
+"Record service acceptance and residual risks accepted by named operational owners.",
+"Must"
+]
+},
+{
+"id": "FR-OPS-010",
+"cols": [
+"Link deployed release/build/version to configuration items, requirements and test evidence.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-001",
+"cols": [
+"Validate all deliverables, acceptance, contractual obligations, financial close and operational handover.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-002",
+"cols": [
+"Capture open items, residual risks, technical debt and ongoing actions with receiving owners and due dates.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-003",
+"cols": [
+"Generate project closure report with objectives, scope delivered, schedule, cost, quality, changes, issues and outcomes.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-004",
+"cols": [
+"Conduct lessons learned throughout delivery and at closure; classify, validate and make reusable.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-005",
+"cols": [
+"Capture supplier performance, team feedback, process effectiveness and improvement opportunities.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-006",
+"cols": [
+"Archive project records under retention policy while preserving search and audit access.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-007",
+"cols": [
+"Create benefits review schedule and transfer benefit ownership to business.",
+"Must"
+]
+},
+{
+"id": "FR-CLO-008",
+"cols": [
+"Support post-implementation review at configurable intervals and track remedial actions.",
+"Must"
+]
+},
+{
+"id": "FR-INT-001",
+"cols": [
+"Maintain integrated project management plan composed of controlled subsidiary plans and baselines.",
+"Must"
+]
+},
+{
+"id": "FR-INT-002",
+"cols": [
+"Manage interdependencies between projects, programmes, vendors, releases, shared resources and external events.",
+"Must"
+]
+},
+{
+"id": "FR-INT-003",
+"cols": [
+"Maintain integrated change control across all affected baselines and artefacts.",
+"Must"
+]
+},
+{
+"id": "FR-INT-004",
+"cols": [
+"Provide integrated status, forecast, decision and exception reporting.",
+"Must"
+]
+},
+{
+"id": "FR-INT-005",
+"cols": [
+"Support phase management, stage transitions, project splitting, merging and work-package transfer with audit.",
+"Must"
+]
+},
+{
+"id": "FR-INT-006",
+"cols": [
+"Provide programme-level outcomes, benefits, roadmap, dependency and risk aggregation.",
+"Must"
+]
+},
+{
+"id": "NFR-001",
+"cols": [
+"Availability",
+"Target service availability shall be agreed by service tier; proposed production baseline 99.9% monthly excluding approved maintenance."
+]
+},
+{
+"id": "NFR-002",
+"cols": [
+"Performance",
+"95th percentile common page/API response target under 3 seconds at agreed load; long-running operations asynchronous."
+]
+},
+{
+"id": "NFR-003",
+"cols": [
+"Scalability",
+"Support configurable growth in users, portfolios, projects, work items, documents and audit events; validate load profile."
+]
+},
+{
+"id": "NFR-004",
+"cols": [
+"Concurrency",
+"Support concurrent editing with conflict detection or controlled locking for critical baselines and approvals."
+]
+},
+{
+"id": "NFR-005",
+"cols": [
+"Recovery",
+"Define RTO/RPO per platform service tier and test backup restoration and DR procedures."
+]
+},
+{
+"id": "NFR-006",
+"cols": [
+"Security",
+"Complete threat modelling, secure SDLC, vulnerability scanning and independent security testing before production."
+]
+},
+{
+"id": "NFR-007",
+"cols": [
+"Accessibility",
+"Target WCAG 2.2 AA for primary user journeys, subject to formal accessibility assessment."
+]
+},
+{
+"id": "NFR-008",
+"cols": [
+"Usability",
+"Responsive desktop/tablet/mobile layouts; minimise duplicate entry; provide contextual help and validation."
+]
+},
+{
+"id": "NFR-009",
+"cols": [
+"Compatibility",
+"Support current enterprise-approved versions of major browsers; publish supported-version matrix."
+]
+},
+{
+"id": "NFR-010",
+"cols": [
+"Maintainability",
+"Modular architecture, documented APIs, automated tests, observability and controlled deployment."
+]
+},
+{
+"id": "NFR-011",
+"cols": [
+"Interoperability",
+"Import/export common structured formats and maintain documented APIs."
+]
+},
+{
+"id": "NFR-012",
+"cols": [
+"Auditability",
+"Searchable audit records with retention and export controls."
+]
+},
+{
+"id": "NFR-013",
+"cols": [
+"Localization",
+"Support configurable language, date, time, number, currency and timezone formats."
+]
+},
+{
+"id": "NFR-014",
+"cols": [
+"Data integrity",
+"Enforce referential integrity, transaction boundaries, validation and recovery from partial failures."
+]
+},
+{
+"id": "NFR-015",
+"cols": [
+"Observability",
+"Central logs, metrics, traces, health checks, alerting and integration monitoring."
+]
+},
+{
+"id": "NFR-016",
+"cols": [
+"Portability",
+"Provide complete authorised export of project data, documents and relationships in documented formats."
+]
+},
+{
+"id": "AC-01",
+"cols": [
+"A project can be created from intake, assigned an identifier and progressed through configured gates with required evidence."
+]
+},
+{
+"id": "AC-02",
+"cols": [
+"A user can navigate from portfolio objective to project, requirement, work item, test, acceptance and benefit record."
+]
+},
+{
+"id": "AC-03",
+"cols": [
+"Approved scope, schedule and budget baselines are preserved and changed only through authorised change control."
+]
+},
+{
+"id": "AC-04",
+"cols": [
+"BIA captures impact over time, dependencies, MTPD, RTO/RPO and approvals, and flags invalid or missing data."
+]
+},
+{
+"id": "AC-05",
+"cols": [
+"A project manager can create WBS, schedule, dependencies, milestones, assignments and forecasts."
+]
+},
+{
+"id": "AC-06",
+"cols": [
+"Resource managers can view demand/capacity and resolve allocation conflicts."
+]
+},
+{
+"id": "AC-07",
+"cols": [
+"Finance can reconcile project actuals/commitments and review forecast calculations."
+]
+},
+{
+"id": "AC-08",
+"cols": [
+"A change request produces an impact assessment and updates affected records only after approval."
+]
+},
+{
+"id": "AC-09",
+"cols": [
+"SOP, user guide and process flow can be generated from controlled project/process data and published through approval."
+]
+},
+{
+"id": "AC-10",
+"cols": [
+"UAT evidence, defects and business acceptance are traceable to approved requirements."
+]
+},
+{
+"id": "AC-11",
+"cols": [
+"Go-live cannot be approved where configured mandatory readiness evidence is missing or an authorised exception is absent."
+]
+},
+{
+"id": "AC-12",
+"cols": [
+"All material approvals, changes, financial adjustments and administrative actions are auditable."
+]
+},
+{
+"id": "AC-13",
+"cols": [
+"AI-generated recommendations cite source records and cannot execute restricted approval actions."
+]
+},
+{
+"id": "AC-14",
+"cols": [
+"Authorised users can export complete project records and associated documents without breaking relationships."
+]
+},
+{
+"id": "PRD-001",
+"cols": [
+"Product catalogue",
+"Create and maintain a central product register with unique product ID, name, description, type, domain, owner, sponsor, lifecycle status, criticality, business unit, geography, customer segments and linked services."
+]
+},
+{
+"id": "PRD-002",
+"cols": [
+"Product hierarchy",
+"Support product portfolios, product lines, products, modules/components, platforms and services with parent-child relationships and configurable hierarchy."
+]
+},
+{
+"id": "PRD-003",
+"cols": [
+"Product profile",
+"Maintain vision, mission, value proposition, target users, personas, jobs-to-be-done, problem statements, differentiators, channels, constraints and product principles."
+]
+},
+{
+"id": "PRD-004",
+"cols": [
+"Product ownership",
+"Assign Product Manager, Product Owner, business owner, technical owner, service owner, data owner and commercial owner with effective dates and delegation history."
+]
+},
+{
+"id": "PRD-005",
+"cols": [
+"Idea intake",
+"Provide configurable idea submission forms for employees, customers, partners and management; capture source, attachments, category, expected value, urgency and affected products."
+]
+},
+{
+"id": "PRD-006",
+"cols": [
+"Idea triage",
+"Support duplicate detection, categorisation, scoring, comments, triage meetings, decisions, rejection reasons, deferral dates and conversion to discovery item."
+]
+},
+{
+"id": "PRD-007",
+"cols": [
+"Customer and stakeholder insights",
+"Maintain stakeholder groups, customer segments, personas, interview plans, research notes, feedback themes, consent/permission metadata and evidence links."
+]
+},
+{
+"id": "PRD-008",
+"cols": [
+"Opportunity management",
+"Record opportunities with problem, affected segment, evidence, reach, impact, confidence, strategic fit, urgency, effort and measurable opportunity outcome."
+]
+},
+{
+"id": "PRD-009",
+"cols": [
+"Discovery management",
+"Plan and track discovery activities, hypotheses, assumptions, research tasks, prototypes, experiments, findings, decisions and evidence."
+]
+},
+{
+"id": "PRD-010",
+"cols": [
+"Hypothesis register",
+"Record hypothesis statement, user segment, expected behaviour/outcome, measurement method, baseline, target, owner, status and validation evidence."
+]
+},
+{
+"id": "PRD-011",
+"cols": [
+"Experiment management",
+"Define experiment design, sample/segment, control and treatment where relevant, duration, guardrails, success thresholds, results and decision. Support ethical and privacy review."
+]
+},
+{
+"id": "PRD-012",
+"cols": [
+"Product strategy",
+"Maintain product vision, strategic objectives, strategic themes, positioning, target segments, strategic constraints and alignment to organisation strategy."
+]
+},
+{
+"id": "PRD-013",
+"cols": [
+"Product business case",
+"Capture problem/opportunity, options, expected benefits, cost, revenue, savings, TCO, NPV/ROI where applicable, assumptions, sensitivity, risks, funding request and approval."
+]
+},
+{
+"id": "PRD-014",
+"cols": [
+"Product portfolio",
+"View products by strategic fit, lifecycle, value, cost, risk, technical health, customer impact, revenue and investment; support portfolio review and investment decisions."
+]
+},
+{
+"id": "PRD-015",
+"cols": [
+"Roadmap",
+"Create outcome-based roadmaps by product, portfolio, audience and time horizon; support Now/Next/Later and date-based views, confidence levels, dependencies and scenario alternatives."
+]
+},
+{
+"id": "PRD-016",
+"cols": [
+"Roadmap governance",
+"Version roadmaps, record approvals, changes, rationale, impact, stakeholder communications and superseded commitments."
+]
+},
+{
+"id": "PRD-017",
+"cols": [
+"Prioritisation",
+"Provide configurable scoring models such as RICE, WSJF, MoSCoW, value-versus-effort and weighted scorecards; allow custom weights, explainable score calculations and override audit trail."
+]
+},
+{
+"id": "PRD-018",
+"cols": [
+"Outcome and OKR alignment",
+"Link product objectives and key results to corporate objectives, measurable outcomes, initiatives, releases and dashboards; track baseline, target, actual and confidence."
+]
+},
+{
+"id": "PRD-019",
+"cols": [
+"Product requirements",
+"Capture product requirements, user stories, acceptance criteria, business rules, non-functional requirements, personas, source, rationale, priority and traceability."
+]
+},
+{
+"id": "PRD-020",
+"cols": [
+"Backlog management",
+"Manage themes, initiatives, epics, capabilities, features, stories, defects, technical enablers and research tasks; support hierarchy, dependencies, estimation and prioritisation."
+]
+},
+{
+"id": "PRD-021",
+"cols": [
+"Product-to-project linkage",
+"Convert approved initiatives into projects/programmes or link to existing delivery work; retain two-way traceability between product outcomes and project scope/deliverables."
+]
+},
+{
+"id": "PRD-022",
+"cols": [
+"Continuous delivery linkage",
+"Support product teams delivering through persistent backlogs and releases without requiring a new project for every change."
+]
+},
+{
+"id": "PRD-023",
+"cols": [
+"Release management",
+"Plan releases, versions, scope, release notes, environments, deployment windows, dependencies, approvals, readiness checklist, rollback and release outcome."
+]
+},
+{
+"id": "PRD-024",
+"cols": [
+"Launch management",
+"Manage launch plans, target audiences, channels, communications, training, sales/operations enablement, support readiness, FAQs, launch risks and post-launch review."
+]
+},
+{
+"id": "PRD-025",
+"cols": [
+"Adoption management",
+"Track eligible users, active users, activation, onboarding completion, feature adoption, retention, engagement and segment-level adoption against targets."
+]
+},
+{
+"id": "PRD-026",
+"cols": [
+"Product analytics",
+"Define metrics, event taxonomy, data source, owner, calculation, refresh frequency, baseline, target and thresholds; display trends and segment breakdowns."
+]
+},
+{
+"id": "PRD-027",
+"cols": [
+"Voice of customer",
+"Consolidate feedback, complaints, surveys, support tickets, app reviews and relationship-manager input; classify themes and link feedback to opportunities and backlog."
+]
+},
+{
+"id": "PRD-028",
+"cols": [
+"Product health",
+"Provide configurable health score using adoption, customer satisfaction, reliability, security, cost, delivery predictability, technical debt and business performance."
+]
+},
+{
+"id": "PRD-029",
+"cols": [
+"Technical debt",
+"Register technical debt items with risk, impact, remediation estimate, affected components, owner and planned capacity; report debt trend and ageing."
+]
+},
+{
+"id": "PRD-030",
+"cols": [
+"Product financials",
+"Track product budget, operating cost, capital cost, cloud/vendor cost, revenue, margin, unit economics, forecast, actuals and allocation rules."
+]
+},
+{
+"id": "PRD-031",
+"cols": [
+"Pricing and commercial model",
+"Where applicable, record pricing models, tiers, packages, discounts, contracts, monetisation assumptions, approvals and effective dates; restrict sensitive commercial access."
+]
+},
+{
+"id": "PRD-032",
+"cols": [
+"Product risk and compliance",
+"Maintain product-level risks covering privacy, cybersecurity, regulatory, legal, accessibility, third-party, data, operational, reputational and continuity concerns."
+]
+},
+{
+"id": "PRD-033",
+"cols": [
+"Product BIA",
+"Capture critical business services supported, impact of product unavailability, maximum tolerable period of disruption, RTO/RPO requirements, dependencies, workarounds, recovery priorities and evidence; link to enterprise BIA and continuity plans."
+]
+},
+{
+"id": "PRD-034",
+"cols": [
+"Operational readiness",
+"Require service owner, support hours, service levels, monitoring, alerting, runbooks, SOPs, user guides, knowledge articles, backup/recovery, access model and support escalation before production acceptance."
+]
+},
+{
+"id": "PRD-035",
+"cols": [
+"Product documentation",
+"Maintain version-controlled product charter, PRD, UX artefacts, architecture, API specifications, data dictionary, SOP, user guide, process flow, release notes and support documentation."
+]
+},
+{
+"id": "PRD-036",
+"cols": [
+"Product change management",
+"Assess proposed product changes for customer, scope, roadmap, cost, schedule, architecture, security, compliance, BIA, operations and benefits impact; route through configurable approvals."
+]
+},
+{
+"id": "PRD-037",
+"cols": [
+"Product lifecycle review",
+"Schedule periodic reviews and trigger reviews on poor performance, major incidents, regulatory changes, vendor end-of-life, cost overruns or strategic shifts."
+]
+},
+{
+"id": "PRD-038",
+"cols": [
+"Sunset and retirement",
+"Manage end-of-life decision, customer notice, migration, data export/retention, contract/vendor closure, decommission, access removal, archive and residual risk acceptance."
+]
+},
+{
+"id": "PRD-039",
+"cols": [
+"Product governance",
+"Support product councils, portfolio boards, design authority and investment committees with agenda, papers, decisions, actions, minutes and decision history."
+]
+},
+{
+"id": "PRD-040",
+"cols": [
+"Product reporting",
+"Provide executive, portfolio, product, discovery, roadmap, delivery, adoption, financial, risk and health dashboards with role-based filtering and export."
+]
+},
+{
+"id": "PRD-041",
+"cols": [
+"Product collaboration",
+"Provide comments, mentions, tasks, approvals, decision logs, meeting notes, notifications and subscriptions linked to product records."
+]
+},
+{
+"id": "PRD-042",
+"cols": [
+"Product templates",
+"Allow configurable templates for product charter, discovery brief, business case, PRD, roadmap, experiment, launch plan, health review and retirement plan."
+]
+},
+{
+"id": "PRD-043",
+"cols": [
+"Product access control",
+"Apply role-based and attribute-based permissions to product, financial, customer research, commercial, security and personal data."
+]
+},
+{
+"id": "PRD-044",
+"cols": [
+"Product audit trail",
+"Log creation, updates, status changes, score changes, roadmap changes, approvals, access-sensitive actions and data exports with actor and timestamp."
+]
+},
+{
+"id": "PRD-045",
+"cols": [
+"AI product assistant",
+"Assist with idea clustering, research synthesis, draft personas, requirement quality checks, roadmap options, release summaries and product health insights; require human review and preserve source/evidence links."
+]
+}
+]

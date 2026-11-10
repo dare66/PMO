@@ -1,0 +1,2 @@
+# ADR-0009 – Custom design system with validated chart palette
+**Status:** Accepted · Original visual identity “Meridian” (sapphire→teal), light-first with an opt-in dark theme, CSS tokens, no admin template. Charts use a fixed-order categorical palette validated for colour-vision deficiency, single-hue sequential ramps, status colours reserved for RAG and always paired with icon + label; every chart has a table alternative.

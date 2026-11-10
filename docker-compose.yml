@@ -1,0 +1,61 @@
+# Meridian – Enterprise Strategy, Portfolio, Product, Project & Work Platform
+# Usage: ./start.sh   (creates .env with random secrets on first run, then `docker compose up -d --build`)
+name: meridian
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: meridian
+      POSTGRES_USER: meridian
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meridian -d meridian"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://meridian:${POSTGRES_PASSWORD}@db:5432/meridian
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ORG_CODE: ${ORG_CODE:-ORG}
+      ORG_NAME: ${ORG_NAME:-My Organisation}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      AI_PROVIDER: ${AI_PROVIDER:-local}
+      AI_EXTERNAL_ALLOWED: ${AI_EXTERNAL_ALLOWED:-false}
+      AI_MODEL: ${AI_MODEL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_COMPATIBLE_BASE_URL: ${OPENAI_COMPATIBLE_BASE_URL:-}
+      OPENAI_COMPATIBLE_API_KEY: ${OPENAI_COMPATIBLE_API_KEY:-}
+      AI_MONTHLY_TOKEN_BUDGET: ${AI_MONTHLY_TOKEN_BUDGET:-2000000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-10}
+      API_RATE_LIMIT: ${API_RATE_LIMIT:-600}
+    volumes: [files:/data/files]
+    networks: [backend, frontend]
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    ports: ["${WEB_PORT:-8080}:80"]
+    networks: [frontend]
+
+volumes:
+  db-data:
+  files:
+networks:
+  backend:
+  frontend:

@@ -1,0 +1,14 @@
+# Known issues & limitations
+- KI-01 ~~FRS v1.1 not imported~~ – closed: reconciled item by item. The uploaded FRS is partial per the customer (GAP-013).
+- KI-02 Single-node job scheduler (ADR-0004); escalation and daily checks run every 6 hours in-process.
+- KI-03 Planned value uses a linear curve between baseline dates (no cost-loaded schedule).
+- KI-04 Global search uses ILIKE across records; document versions have a full-text index. No OCR.
+- KI-05 Dependencies register uses record ids for heterogeneous targets in the generic form (work-item dependencies have pickers).
+- KI-06 Work-item Gantt shows only items with start and due dates; the CPM table covers all items.
+- KI-07 Integrations other than the generic webhook are MOCK. OIDC SSO is implemented but was not tested against a live identity provider in this build.
+- KI-08 ~~Saved views per browser~~ – closed: server-side personal/shared views (`/api/views`).
+- KI-09 ~~Bundle size~~ – closed: route-level code splitting; the charts library (126 kB gzip) loads with the first chart.
+- KI-10 react-router-dom 6.30.6 has one moderate advisory (backslash open redirect) fixed only in v7; navigation targets are internal. Migration planned.
+- KI-11 Test runner (vitest 2.1.9, dev-only) has advisories; vitest 5 blocked by a peer-dependency conflict. Not shipped in images.
+- KI-12 Document generators produce Markdown; DOCX/PDF rendering and screenshot capture for user guides are not automated.
+- KI-13 Resource levelling / schedule compression (FR-SCH-010) and onboarding checklists (FR-RES-010) deferred.

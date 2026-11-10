@@ -1,0 +1,27 @@
+"# Y=documented in cited source, P=partial/add-on/tier, N=not a product focus, ?=not verified. Access 2026-11-06. Meridian column = this repository (Y implemented, P partial)."
+Capability,"ServiceNow SPM (S04,S05)","Planview Portfolios (S32,S33)","OpenProject (S19,S20)",Azure DevOps Boards (S34),Jira Product Discovery (S07-S09),"Aha! Roadmaps (S24,S25)",Productboard (S38),"Jira Service Mgmt (S43,S44)",ServiceNow GRC (S45),Meridian (this platform)
+Portfolio funding & scenarios,Y,Y,N,N,N,P,N,N,N,P
+Demand intake & staged assessment,Y,Y,N,N,P,P,P,N,N,Y
+Product as independent object,P,?,N,N,Y,Y,Y,N,N,Y
+Discovery: ideas+evidence+scoring,P,?,N,N,Y,Y,Y,N,N,Y
+Roadmaps,Y,Y,Y,Y,Y,Y,Y,N,N,Y
+Programme mgmt,Y,Y,P,N,N,N,N,N,N,Y
+Project lifecycle gates (configurable),Y,?,P,N,N,N,N,N,N,Y
+Gantt/schedule,Y,Y,Y,P,N,N,N,N,N,Y
+Agile boards,Y,?,Y,Y,N,N,N,P,N,Y
+EVM,?,?,N,N,N,N,N,N,N,Y
+Budget/actuals/forecast reconciliation,Y,Y,P,N,N,N,N,N,N,Y
+Benefits realisation,?,?,N,N,N,P,N,N,N,Y
+Resource capacity across all work,Y,Y,P,N,N,N,N,N,N,Y
+RAID with risk acceptance approval,Y,?,P,N,N,N,N,N,Y,Y
+Change control with auto impact assessments,Y,?,N,N,N,N,N,P,N,Y
+"Integrated BIA (MTPD/RTO, dependencies)",?,?,N,N,N,N,N,N,P,Y
+Process repository/BPMN,?,?,N,N,N,N,N,N,N,P
+Test & UAT mgmt,?,?,N,P,N,N,N,N,N,Y
+Release readiness & CAB,Y,?,N,P,N,P,N,Y,N,Y
+Vendor/contract mgmt,?,?,N,N,N,N,N,N,P,Y
+GRC controls & attestations,Y,?,N,N,N,N,N,N,Y,P
+Document generation from data,?,?,N,N,N,N,N,N,N,Y
+AI with citations & human approval,?,P,N,?,?,?,P,?,?,Y
+Tamper-evident audit,?,?,?,?,?,?,?,?,?,Y
+Self-hostable / open,N,N,Y,P,N,N,N,N,N,Y

@@ -1,0 +1,2 @@
+# ADR-0008 – AI provider abstraction, local-first
+**Status:** Accepted · Providers: `local` (deterministic rules, default, no data leaves), `anthropic` (official SDK; default model `claude-opus-5-5`, server-side refusal fallback enabled) and `openai_compatible` (self-hosted e.g. Ollama/vLLM). External providers require `AI_EXTERNAL_ALLOWED=true` and receive only public/internal records. AI has no write tools; humans accept suggestions. Enabling any external provider is an approval item (DEC-07) because it transmits data off-platform and incurs cost.
