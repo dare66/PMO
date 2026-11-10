@@ -10,6 +10,8 @@ import { DataTable, RecordDrawer, RecordForm, RefSelect, AuditList } from '../co
 import { BarsChart, ChartFrame, Gantt, TrendChart, Waterfall } from '../components/charts';
 import { WorkflowPanel } from '../components/workflow';
 import { Board } from './Delivery';
+import { ExportProjectButton, OcmPanel, QualityGate, RaciPanel, ScheduleTab, SprintsPanel } from './Frs';
+import { CommentsPanel } from '../components/panels';
 
 export function ProjectsList() {
   const nav = useNavigate();
@@ -126,6 +128,8 @@ export function ProjectWorkspace() {
       sub={<span className="row wrap" style={{ gap: 8 }}><Status v={p.status} /><span className="badge brand">{label(p.lifecycle_stage)}</span><span className="badge">{label(p.delivery_approach)}</span><span className="badge">{label(p.project_type)}</span>{p._refs.portfolio_id && <span className="small">Portfolio: {p._refs.portfolio_id.name}</span>}{p._refs.programme_id && <span className="small">· Programme: {p._refs.programme_id.name}</span>}</span>}
       actions={<>
         <button className="btn" onClick={runAi}><Sparkles size={14} />AI insight</button>
+        <ExportProjectButton id={p.id} />
+        {can('documents:write') && <button className="btn" onClick={async () => { try { const r = await api.post('/api/documents/generate', { doc_type: 'project_management_plan', ...ctx }); toast(`Project management plan v${r.version} generated (${r.missing_fields.length} gaps)`); nav(`/documents?open=${r.document_id}`); } catch (e) { toast(errMsg(e), 'error'); } }}><FileText size={14} />PM plan</button>}
         {can('documents:write') && <button className="btn" onClick={async () => { try { const r = await api.post('/api/documents/generate', { doc_type: 'status_report', ...ctx }); toast(`Status report v${r.version} generated (${r.missing_fields.length} gaps)`); nav(`/documents?open=${r.document_id}`); } catch (e) { toast(errMsg(e), 'error'); } }}><FileText size={14} />Status report</button>}
         {can('projects:write') && p.status !== 'closed' && <><button className="btn" onClick={() => setModal('bia')}><Shield size={14} />BIA screening</button><button className="btn" onClick={() => setModal('edit')}>Edit</button><button className="btn" onClick={() => setModal('close')}><Lock size={14} />Close</button></>}
       </>} />
@@ -141,7 +145,11 @@ export function ProjectWorkspace() {
       {ai.suggestions?.length > 0 && <div style={{ marginTop: 10 }}><h3>Suggested risks (not created until you accept)</h3>{ai.suggestions.map((s: any, i: number) => <div key={i} className="list-row"><span style={{ flex: 1 }}><b>{s.name}</b> <span className="small muted">{s.rationale}</span></span><button className="btn sm" onClick={async () => { try { await api.post('/api/ai/accept-suggestion', { interaction_id: ai.interaction_id, suggestion: s, ...ctx }); toast('Draft risk created'); } catch (e) { toast(errMsg(e), 'error'); } }}><Plus size={14} />Accept as draft</button></div>)}</div>}
       <div className="tiny muted" style={{ marginTop: 8 }}>{ai.disclaimer}</div>
     </Card></div>}
-    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'overview', label: 'Overview' }, { key: 'plan', label: 'Plan & timeline' }, { key: 'board', label: 'Board' }, { key: 'raid', label: 'RAID' }, { key: 'change', label: 'Change' }, { key: 'finance', label: 'Finance & benefits' }, { key: 'resources', label: 'Resources' }, { key: 'scope', label: 'Requirements & quality' }, { key: 'governance', label: 'Governance & gates' }, { key: 'docs', label: 'Documents' }, { key: 'history', label: 'History' }]} />
+    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'overview', label: 'Overview' }, { key: 'plan', label: 'Plan & timeline' }, { key: 'schedule', label: 'Schedule & baseline' }, { key: 'board', label: 'Board & sprints' }, { key: 'people', label: 'RACI' }, { key: 'ocm', label: 'People & change' }, { key: 'raid', label: 'RAID' }, { key: 'change', label: 'Change' }, { key: 'finance', label: 'Finance & benefits' }, { key: 'resources', label: 'Resources' }, { key: 'scope', label: 'Requirements & quality' }, { key: 'governance', label: 'Governance & gates' }, { key: 'docs', label: 'Documents' }, { key: 'discuss', label: 'Comments' }, { key: 'history', label: 'History' }]} />
+    {tab === 'schedule' && <ScheduleTab project={p} onChanged={reload} />}
+    {tab === 'people' && <RaciPanel type="project" id={p.id} />}
+    {tab === 'ocm' && <OcmPanel type="project" id={p.id} />}
+    {tab === 'discuss' && <Card title="Discussion"><CommentsPanel entityType="projects" entityId={p.id} /></Card>}
     {tab === 'overview' && <div className="grid g-12">
       <div className="span-7"><Card title="Charter summary"><dl className="kv">
         <dt>Manager</dt><dd>{p._refs.owner_id?.name ?? '—'}</dd><dt>Sponsor</dt><dd>{p._refs.sponsor_id?.name ?? <span className="badge warn">Missing</span>}</dd><dt>Objective</dt><dd>{p._refs.objective_id?.name ?? '—'}</dd>
@@ -152,12 +160,12 @@ export function ProjectWorkspace() {
         <Card title="Upcoming milestones">{(ms.data?.data ?? []).filter((m: any) => m.status !== 'achieved').slice(0, 5).map((m: any) => <div key={m.id} className="list-row"><FlagTriangleRight size={14} color={m.is_gate ? 'var(--brand)' : 'var(--text-3)'} /><span style={{ flex: 1 }}>{m.name}</span><span className="small">{fmtDate(m.due_date)}</span><Status v={m.status} /></div>)}</Card></div>
     </div>}
     {tab === 'plan' && <div className="col" style={{ gap: 14 }}><Card title="Schedule" sub="Project bar, milestones (◆), dated work items · red line = today, dashed = baseline"><Gantt rows={ganttRows} /></Card><div className="grid g2"><DataTable resource="milestones" filters={{ project_id: p.id }} title="Milestones" pageSize={10} /><DataTable resource="deliverables" filters={{ project_id: p.id }} title="Deliverables" pageSize={10} /></div><DataTable resource="dependencies" title="Dependencies (all)" pageSize={10} /></div>}
-    {tab === 'board' && <Board filters={{ context_type: 'project', context_id: p.id }} />}
-    {tab === 'raid' && <div className="col" style={{ gap: 14 }}><DataTable resource="risks" filters={ctx} title="Risks" pageSize={10} /><DataTable resource="issues" filters={ctx} title="Issues" pageSize={10} /><DataTable resource="assumptions" filters={ctx} title="Assumptions" pageSize={10} /></div>}
+    {tab === 'board' && <div className="col" style={{ gap: 14 }}><Board filters={{ context_type: 'project', context_id: p.id }} /><SprintsPanel ctx={ctx} /></div>}
+    {tab === 'raid' && <div className="col" style={{ gap: 14 }}><DataTable resource="risks" filters={ctx} title="Risks" pageSize={10} /><DataTable resource="lessons" filters={ctx} createPreset={ctx} title="Lessons learned" pageSize={5} /><DataTable resource="issues" filters={ctx} title="Issues" pageSize={10} /><DataTable resource="assumptions" filters={ctx} title="Assumptions" pageSize={10} /></div>}
     {tab === 'change' && <DataTable resource="change_requests" filters={ctx} title="Change requests" />}
     {tab === 'finance' && <FinanceTab ctxType="project" id={p.id} evm={evm.data} />}
     {tab === 'resources' && <DataTable resource="resource_allocations" filters={ctx} title="Allocations" />}
-    {tab === 'scope' && <div className="col" style={{ gap: 14 }}><DataTable resource="requirements" filters={ctx} title="Requirements" /><DataTable resource="test_plans" filters={ctx} title="Test plans" pageSize={10} /><DataTable resource="defects" filters={ctx} title="Defects" pageSize={10} /></div>}
+    {tab === 'scope' && <div className="col" style={{ gap: 14 }}><QualityGate type="project" id={p.id} /><DataTable resource="requirements" filters={ctx} title="Requirements" /><div className="grid g2"><DataTable resource="quality_reviews" filters={ctx} createPreset={ctx} title="Quality reviews & audits" pageSize={5} /><DataTable resource="non_conformances" filters={ctx} createPreset={ctx} title="Non-conformances (CAPA)" pageSize={5} /></div><DataTable resource="test_plans" filters={ctx} title="Test plans" pageSize={10} /><DataTable resource="defects" filters={ctx} title="Defects" pageSize={10} /></div>}
     {tab === 'governance' && <div className="col" style={{ gap: 14 }}><WorkflowPanel entityType="projects" entityId={p.id} onChanged={reload} /><DataTable resource="decisions" filters={ctx} title="Decisions" pageSize={10} /><DataTable resource="meetings" filters={ctx} title="Meetings" pageSize={10} /></div>}
     {tab === 'docs' && <DataTable resource="documents" filters={ctx} title="Project documents" />}
     {tab === 'history' && <Card title="Audit history"><AuditList entityType="projects" entityId={p.id} /></Card>}

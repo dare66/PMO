@@ -1,3 +1,4 @@
+import { useApi } from '../lib/hooks';
 import { useState } from 'react';
 import { LogIn } from 'lucide-react';
 import { api } from '../lib/api';
@@ -28,6 +29,7 @@ function HeroArt() {
 }
 
 export function Login() {
+  const { data: sso } = useApi<{ enabled: boolean; issuer: string | null }>('/api/auth/sso');
   const { refresh, me } = useSession();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
   const [err, setErr] = useState<any>(null); const [busy, setBusy] = useState(false);
@@ -53,7 +55,8 @@ export function Login() {
             <div className="field"><label htmlFor="pw">Password</label><input id="pw" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
             {err && <ErrorBox error={err} />}
             <button className="btn primary block" disabled={busy} style={{ height: 40 }}><LogIn size={16} />{busy ? 'Signing in…' : 'Sign in'}</button>
-            <div className="tiny muted">Single sign-on (OIDC/SAML via Entra ID) is an approved-integration item – see docs/security. Demo accounts are listed in the README.</div>
+            {sso?.enabled && <a className="btn block" href={`/api/auth/sso/start?return_to=${encodeURIComponent(location.pathname)}`} style={{ height: 40, justifyContent: 'center' }}>Sign in with single sign-on</a>}
+            <div className="tiny muted">{sso?.enabled ? `SSO via ${sso.issuer}.` : 'Single sign-on is available when an OIDC identity provider is configured (see docs/security).'} Demo accounts are listed in the README.</div>
           </div>
         </form>
       </div>

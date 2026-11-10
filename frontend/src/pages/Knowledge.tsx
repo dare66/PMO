@@ -9,6 +9,7 @@ import { Card, Empty, ErrorBox, Kpi, LoadingBlock, Note, PageHead, Status, Tabs,
 import { DataTable, RecordDrawer, RefSelect, AuditList } from '../components/resource';
 import { ApprovalCard } from '../components/workflow';
 import { BarsChart, ChartFrame } from '../components/charts';
+import { AiIntake, OrgSettings } from './Frs';
 
 /** Minimal, XSS-safe markdown renderer (escape first, then a small subset of syntax). */
 export function Markdown({ text }: { text: string }) {
@@ -151,6 +152,7 @@ export function AiPage() {
       </div>
       <div className="span-12"><Card title="Interaction log" sub="Audited AI usage" bodyClass=""><div className="table-wrap"><table className="data"><thead><tr><th>When</th><th>User</th><th>Capability</th><th>Prompt</th><th>Provider</th><th>Confidence</th><th className="num">Tokens</th><th>External</th><th>Flags</th></tr></thead>
         <tbody>{(log ?? []).slice(0, 25).map((l) => <tr key={l.id}><td className="small">{fmtDateTime(l.created_at)}</td><td>{l.user_name}</td><td>{label(l.capability)}</td><td className="small" style={{ maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.prompt}</td><td className="small">{l.provider}/{l.model}</td><td><Status v={l.confidence === 'high' ? 'approved' : l.confidence === 'medium' ? 'pending' : 'draft'} /></td><td className="num">{l.tokens_in + l.tokens_out}</td><td>{l.external_transmission ? 'Yes' : 'No'}</td><td>{l.injection_flags.length ? <span className="badge crit">{l.injection_flags.length}</span> : '—'}</td></tr>)}</tbody></table></div></Card></div>
+      <div className="span-12"><AiIntake /></div>
     </div>
   </>);
 }
@@ -167,7 +169,8 @@ export function VendorsPage() {
       </ChartFrame></div>
       <div className="span-5"><Card title="Renewal attention">{rows.filter((c: any) => c.days_to_expiry < c.renewal_notice_days).map((c: any) => <div key={c.id} className="list-row"><span className={`badge ${c.days_to_expiry < 0 ? 'crit' : 'warn'}`}>{c.days_to_expiry < 0 ? 'Expired' : `${c.days_to_expiry}d`}</span><span style={{ flex: 1 }}>{c.name}</span><span className="small muted">{c._refs.vendor_id?.name}</span><span className="num small">{fmtMoney(c.contract_value, c.currency)}</span></div>)}</Card></div>
     </div>
-    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'contracts', label: 'Contracts' }, { key: 'vendors', label: 'Vendors' }, { key: 'pr', label: 'Purchase requests' }, { key: 'inv', label: 'Invoices' }]} />
+    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'contracts', label: 'Contracts' }, { key: 'vendors', label: 'Vendors' }, { key: 'pr', label: 'Purchase requests' }, { key: 'inv', label: 'Invoices' }, { key: 'tenders', label: 'Tenders & bids' }, { key: 'cms', label: 'Contract milestones' }, { key: 'reviews', label: 'Vendor reviews' }]} />
+    {tab === 'tenders' && <div className="col" style={{ gap: 14 }}><DataTable resource="tenders" /><DataTable resource="tender_bids" /></div>}{tab === 'cms' && <DataTable resource="contract_milestones" />}{tab === 'reviews' && <DataTable resource="vendor_reviews" />}
     {tab === 'contracts' && <DataTable resource="contracts" />}{tab === 'vendors' && <DataTable resource="vendors" />}{tab === 'pr' && <DataTable resource="purchase_requests" />}{tab === 'inv' && <DataTable resource="invoices" />}
   </>);
 }
@@ -211,7 +214,8 @@ export function AdminPage() {
   const [browse, setBrowse] = useState('departments');
   return (<>
     <PageHead title="Administration & configuration" sub="Organisation, users, roles and permissions, workflow templates, RAG thresholds, delegated authority, integrations and reference data – configuration, not code." />
-    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'users', label: 'Users & roles' }, { key: 'workflows', label: 'Workflows' }, { key: 'config', label: 'Thresholds & authority' }, { key: 'integrations', label: 'Integrations' }, { key: 'data', label: 'Data browser' }]} />
+    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'users', label: 'Users & roles' }, { key: 'workflows', label: 'Workflows' }, { key: 'config', label: 'Thresholds & authority' }, { key: 'integrations', label: 'Integrations' }, { key: 'org', label: 'Locale & calendar' }, { key: 'data', label: 'Data browser' }]} />
+    {tab === 'org' && <OrgSettings />}
     {tab === 'users' && <div className="grid g-12">
       <div className="span-7"><DataTable resource="users" /></div>
       <div className="span-5 col" style={{ gap: 14 }}>

@@ -281,3 +281,14 @@ textarea.input { height: auto; min-height: 80px; padding: 8px 10px; resize: vert
 .kv { display: grid; grid-template-columns: 160px 1fr; gap: 8px 12px; font-size: 13px; }
 .kv dt { color: var(--text-3); } .kv dd { margin: 0; }
 @media (max-width: 760px) { .kv { grid-template-columns: 1fr; } }
+
+/* ---- FRS v1.1 panels */
+:root { --diff-add: color-mix(in srgb, var(--good) 14%, transparent); --diff-del: color-mix(in srgb, var(--crit) 14%, transparent); }
+table.data.compact td, table.data.compact th { padding: 5px 8px; }
+pre.diff { font-family: var(--mono); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px; white-space: pre-wrap; }
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.pipeline .lane { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px; min-height: 120px; }
+.pipeline .lane h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); margin: 0 0 6px; display: flex; justify-content: space-between; }
+.pipeline .tile { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px; margin-bottom: 6px; font: inherit; color: inherit; cursor: pointer; }
+.pipeline .tile:hover, .pipeline .tile:focus-visible { border-color: var(--brand); outline: none; box-shadow: var(--ring); }
+.crit-row td:first-child { box-shadow: inset 3px 0 0 var(--crit); }

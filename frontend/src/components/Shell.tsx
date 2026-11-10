@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity, Bell, Boxes, Briefcase, Building2, CalendarRange, CheckCheck, ClipboardCheck, Compass, FileText, Gauge, GitPullRequestArrow, Handshake, Landmark, Layers3,
-  LayoutDashboard, Lightbulb, LogOut, Menu, Moon, Network, PanelLeftClose, PanelLeftOpen, Plus, Rocket, Scale, Search, Settings, ShieldAlert, Sparkles, Sun, Target, Users, Wallet, Workflow, Wrench,
-} from 'lucide-react';
+  LayoutDashboard, Lightbulb, LogOut, Menu, Moon, Network, PanelLeftClose, PanelLeftOpen, Plus, Rocket, Scale, Search, Settings, ShieldAlert, Sparkles, Sun, Target, Users, Wallet, Workflow, Wrench, Inbox } from 'lucide-react';
 import { useSession } from '../lib/session';
 import { api } from '../lib/api';
 import { useApi, useLocal } from '../lib/hooks';
@@ -13,7 +12,7 @@ import { RecordForm } from './resource';
 
 export const NAV: { group: string; items: { to: string; label: string; icon: any; perm?: string }[] }[] = [
   { group: 'Overview', items: [{ to: '/', label: 'Command centre', icon: LayoutDashboard, perm: 'dashboard:read' }, { to: '/my-work', label: 'My work', icon: CheckCheck }] },
-  { group: 'Strategy & portfolio', items: [{ to: '/strategy', label: 'Strategy & OKRs', icon: Target, perm: 'objectives:read' }, { to: '/portfolio', label: 'Portfolio', icon: Layers3, perm: 'portfolios:read' }, { to: '/programmes', label: 'Programmes', icon: Network, perm: 'programmes:read' }] },
+  { group: 'Strategy & portfolio', items: [{ to: '/strategy', label: 'Strategy & OKRs', icon: Target, perm: 'objectives:read' }, { to: '/portfolio', label: 'Portfolio', icon: Layers3, perm: 'portfolios:read' }, { to: '/demand', label: 'Demand & intake', icon: Inbox, perm: 'requests:read' }, { to: '/programmes', label: 'Programmes', icon: Network, perm: 'programmes:read' }] },
   { group: 'Delivery', items: [{ to: '/projects', label: 'Projects', icon: Briefcase, perm: 'projects:read' }, { to: '/raid', label: 'RAID', icon: ShieldAlert, perm: 'risks:read' }, { to: '/changes', label: 'Change control', icon: GitPullRequestArrow, perm: 'change_requests:read' }, { to: '/quality', label: 'Quality & release', icon: Rocket, perm: 'releases:read' }] },
   { group: 'Product', items: [{ to: '/products', label: 'Products', icon: Boxes, perm: 'products:read' }, { to: '/discovery', label: 'Discovery & ideas', icon: Lightbulb, perm: 'ideas:read' }] },
   { group: 'Operations', items: [{ to: '/operations', label: 'Operational work', icon: Wrench, perm: 'work_items:read' }, { to: '/resilience', label: 'BIA & resilience', icon: Activity, perm: 'bia_assessments:read' }, { to: '/processes', label: 'Processes', icon: Workflow, perm: 'business_processes:read' }] },

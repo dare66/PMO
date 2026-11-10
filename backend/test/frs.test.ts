@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { api, find, getApp, PASSWORD } from './helpers.js';
 import { pool, tx } from '../src/db.js';
 import { loadCtx } from '../src/auth/auth.js';
-import { cpm, computeScore, pert, addWorkingDays, clusterTexts } from '../src/domain/frs.js';
+import { cpm, computeScore, pert, addWorkingDays, clusterTexts, statusOffset } from '../src/domain/frs.js';
 import { recordGoNoGo } from '../src/domain/frs.js';
 import { lineDiff, validateRaci } from '../src/routes/frs.js';
 import { toCsv } from '../src/domain/extended.js';
@@ -45,6 +45,9 @@ describe('Scheduling & scoring calculations (FR-SCH-003/004/006, FR-PORT-004)', 
     expect(pert(2, 4, 12)).toBe(5); expect(pert(2, null, 12)).toBeNull();
     expect(addWorkingDays('2026-11-06', 1, new Set())).toBe('2026-11-09'); // Friday → Monday
     expect(addWorkingDays('2026-11-06', 1, new Set(['2026-11-09']))).toBe('2026-11-10');
+    // status offset maps back to a date on/after the status date, including weekend anchors
+    for (const [a, t] of [['2026-10-31', '2026-11-10'], ['2026-11-02', '2026-11-10'], ['2026-11-06', '2026-11-08']]) expect(addWorkingDays(a, statusOffset(a, t, new Set()), new Set()) >= t).toBe(true);
+    expect(addWorkingDays('2026-11-02', statusOffset('2026-11-02', '2026-11-10', new Set()), new Set())).toBe('2026-11-10');
   });
   it('weighted score is null until every criterion is scored', () => {
     const crit = [{ key: 'value', name: 'Value', weight: 60 }, { key: 'risk', name: 'Risk', weight: 40, direction: 'lower' as const }];
@@ -125,7 +128,11 @@ describe('Baselines, dependencies and evidence (FR-SCP-005, FR-SCH-003..008, FR-
     expect((await api('pm1', 'POST', '/api/work-dependencies', { predecessor_id: a.id, successor_id: c.id, dep_type: 'SS', lag_days: 1 })).status).toBe(201);
     expect((await api('pm1', 'POST', '/api/work-dependencies', { predecessor_id: b.id, successor_id: a.id })).status).toBe(422);
     const s = await api('pm1', 'GET', `/api/projects/${proj.id}/schedule`);
-    expect(s.status).toBe(200); expect(s.body.project_duration_days).toBe(15);
+    expect(s.status).toBe(200);
+    // remaining work is scheduled from the status date (today), and the dependent chain is 5 + 10 = 15 working days
+    const minEs = Math.min(...s.body.activities.map((x: any) => x.es));
+    expect(s.body.project_duration_days - minEs).toBe(15);
+    expect(s.body.activities.every((x: any) => x.early_start >= s.body.status_date)).toBe(true);
     expect(s.body.critical_path).toEqual([a.code, b.code]);
     expect(s.body.slippage_days_vs_baseline).not.toBeNull();
   });

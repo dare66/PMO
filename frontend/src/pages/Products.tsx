@@ -8,6 +8,8 @@ import { Card, Empty, ErrorBox, Kpi, LoadingBlock, PageHead, Progress, Seg, Stat
 import { DataTable, RecordDrawer } from '../components/resource';
 import { BarsChart, ChartFrame, Gantt, Ring } from '../components/charts';
 import { FinanceTab } from './Projects';
+import { IdeaClusters, ProductHealthPanel } from './Frs';
+import { CommentsPanel } from '../components/panels';
 
 const STAGES = ['concept', 'discovery', 'development', 'launch', 'growth', 'mature', 'decline', 'retired'];
 
@@ -76,6 +78,7 @@ export function DiscoveryPage() {
       <div className="span-12"><ChartFrame title="Top ideas by RICE score" sub="Reach × Impact × Confidence ÷ Effort" height={220} empty={!top.length} table={{ headers: ['Idea', 'RICE', 'WSJF'], rows: top.map((i) => [i.name, i.rice_score, i.wsjf_score]) }}><BarsChart horizontal data={top} x="name" series={[{ key: 'rice_score', name: 'RICE score' }]} onClick={(r) => setOpen(r.id)} /></ChartFrame></div>
     </div>
     <DataTable resource="ideas" columns={[{ key: 'code', label: 'ID', render: (r) => <span className="mono">{r.code}</span> }, { key: 'name', label: 'Idea', sortable: true }, { key: 'product_id', label: 'Product', render: (r) => r._refs.product_id?.name ?? '—' }, { key: 'source', label: 'Source', render: (r) => label(r.source) }, { key: 'stage', label: 'Stage', render: (r) => <Status v={r.stage} />, sortable: true }, { key: 'rice_score', label: 'RICE', num: true, render: (r) => r.rice_score ?? <span className="muted">not scored</span> }, { key: 'status', label: 'Status' }]} />
+    <div style={{ marginTop: 14 }}><IdeaClusters /></div>
     <div className="grid g2" style={{ marginTop: 14 }}><DataTable resource="feedback" title="Customer feedback" pageSize={10} /><DataTable resource="experiments" title="Experiments" pageSize={10} /></div>
     {open && <RecordDrawer resource="ideas" id={open} onClose={() => setOpen(null)} />}
   </>);
@@ -102,7 +105,9 @@ export function ProductWorkspace() {
       <Kpi label="Projects (lifetime)" value={data.projects.length} foot={`${data.projects.filter((x: any) => x.status === 'active').length} active · ${data.projects.filter((x: any) => x.status === 'closed').length} closed`} />
       <Kpi label="Resilience" value={data.bias.length ? `Tier ${data.bias[0].criticality_tier ?? '—'}` : '—'} foot={data.bias.length ? `${data.bias.length} BIA(s) · RTO ${data.bias[0].rto_hours ?? '—'}h` : 'No BIA recorded'} />
     </div>
-    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'overview', label: 'Overview' }, { key: 'roadmap', label: 'Roadmap' }, { key: 'discovery', label: 'Discovery' }, { key: 'delivery', label: 'Projects & releases' }, { key: 'ops', label: 'Operations' }, { key: 'reqs', label: 'Requirements' }, { key: 'finance', label: 'Financials' }, { key: 'risk', label: 'Risk & resilience' }]} />
+    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'overview', label: 'Overview' }, { key: 'roadmap', label: 'Roadmap' }, { key: 'discovery', label: 'Discovery' }, { key: 'delivery', label: 'Projects & releases' }, { key: 'ops', label: 'Operations' }, { key: 'reqs', label: 'Requirements' }, { key: 'finance', label: 'Financials' }, { key: 'risk', label: 'Risk & resilience' }, { key: 'health', label: 'Health, metrics & launch' }, { key: 'discuss', label: 'Comments' }]} />
+    {tab === 'health' && <ProductHealthPanel product={p} />}
+    {tab === 'discuss' && <Card title="Discussion"><CommentsPanel entityType="products" entityId={p.id} /></Card>}
     {tab === 'overview' && <div className="grid g2">
       <Card title="Vision & strategy"><dl className="kv"><dt>Vision</dt><dd>{p.vision ?? '—'}</dd><dt>Strategy</dt><dd>{p.strategy ?? '—'}</dd><dt>Target users</dt><dd>{p.target_users ?? '—'}</dd><dt>Pricing model</dt><dd>{p.pricing_model ?? '—'}</dd><dt>Objective</dt><dd>{p._refs.objective_id?.name ?? '—'}</dd><dt>Portfolio</dt><dd>{p._refs.portfolio_id?.name ?? '—'}</dd></dl></Card>
       <Card title="Lifecycle"><div className="row wrap" style={{ gap: 4 }}>{STAGES.map((s, i) => <span key={s} className={`badge ${s === p.lifecycle_stage ? 'brand' : STAGES.indexOf(p.lifecycle_stage) > i ? 'good' : ''}`}>{label(s)}</span>)}</div>

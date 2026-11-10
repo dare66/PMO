@@ -6,6 +6,7 @@ import { Card, Empty, ErrorBox, Kpi, LoadingBlock, PageHead, Progress, Rag, Seg,
 import { DataTable } from '../components/resource';
 import { BarsChart, Bubble, ChartFrame, Donut, Heatmap, RAG_COLOR, Ring, SERIES, seqColor, seqText } from '../components/charts';
 import { FinanceTab } from './Projects';
+import { FinancePeriods } from './Frs';
 
 export function StrategyPage() {
   const { data, error } = useApi<any>('/api/dashboard/executive');
@@ -84,12 +85,13 @@ export function FinancePage() {
   const [tab, setTab] = useState('portfolio');
   return (<>
     <PageHead title="Finance, investment & benefits" sub="Budgets (capex/opex), actuals, commitments and forecasts reconcile to approved funding. Multi-currency with recorded FX. Financial approvals follow delegated authority – never automatic." actions={pfs && <select className="input" style={{ width: 260 }} value={pf ?? ''} onChange={(e) => setSp({ pf: e.target.value })} aria-label="Portfolio">{pfs.data.map((p: any) => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}</select>} />
-    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'portfolio', label: 'Portfolio roll-up' }, { key: 'budgets', label: 'Budget lines' }, { key: 'costs', label: 'Cost ledger' }, { key: 'benefits', label: 'Benefits register' }, { key: 'cases', label: 'Business cases' }, { key: 'procure', label: 'Purchase requests & invoices' }]} />
+    <Tabs value={tab} onChange={setTab} tabs={[{ key: 'portfolio', label: 'Portfolio roll-up' }, { key: 'budgets', label: 'Budget lines' }, { key: 'costs', label: 'Cost ledger' }, { key: 'benefits', label: 'Benefits register' }, { key: 'cases', label: 'Business cases' }, { key: 'periods', label: 'Periods & close' }, { key: 'procure', label: 'Purchase requests & invoices' }]} />
     {tab === 'portfolio' && (pf ? <FinanceTab key={pf} ctxType="portfolio" id={pf} /> : <LoadingBlock />)}
     {tab === 'budgets' && <DataTable resource="budgets" />}
     {tab === 'costs' && <DataTable resource="cost_entries" />}
     {tab === 'benefits' && <DataTable resource="benefits" />}
     {tab === 'cases' && <BusinessCases />}
+    {tab === 'periods' && <FinancePeriods />}
     {tab === 'procure' && <div className="col" style={{ gap: 14 }}><DataTable resource="purchase_requests" /><DataTable resource="invoices" /></div>}
   </>);
 }

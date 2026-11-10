@@ -10,6 +10,7 @@ import { useSession, type FieldDef, type ResourceMeta } from '../lib/session';
 import { fmtDate, fmtDateTime, fmtMoney, fmtNum, label } from '../lib/format';
 import { Drawer, Empty, ErrorBox, LoadingBlock, Status, Tabs, useToast, errMsg, Note } from './ui';
 import { WorkflowPanel } from './workflow';
+import { CommentsPanel, FilesPanel, RecordActions } from './panels';
 
 const CONTEXT_RES: Record<string, string> = { project: 'projects', product: 'products', programme: 'programmes', portfolio: 'portfolios', service: 'services', idea: 'ideas' };
 
@@ -230,13 +231,16 @@ export function RecordDrawer({ resource, id, onClose, onChanged, extra }: { reso
       {error ? <ErrorBox error={error} retry={reload} /> : loading || !row ? <LoadingBlock rows={8} /> : editing ? (
         <RecordForm meta={m} initial={row} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); reload(); onChanged?.(); }} />
       ) : (<>
-        <Tabs value={tab} onChange={setTab} tabs={[{ key: 'details', label: 'Details' }, { key: 'workflow', label: <><GitBranch size={14} />Workflow & approvals</> }, { key: 'history', label: <><History size={14} />History</> }]} />
+        <Tabs value={tab} onChange={setTab} tabs={[{ key: 'details', label: 'Details' }, { key: 'comments', label: 'Comments' }, { key: 'files', label: 'Files' }, { key: 'workflow', label: <><GitBranch size={14} />Workflow & approvals</> }, { key: 'history', label: <><History size={14} />History</> }]} />
+        {tab === 'comments' && <CommentsPanel entityType={resource} entityId={id} />}
+        {tab === 'files' && <FilesPanel entityType={resource} entityId={id} />}
         {tab === 'details' && (<>
+          <RecordActions resource={resource} row={row} onDone={() => { reload(); onChanged?.(); }} />
           {extra?.(row)}
           <dl className="kv">
             {row._context && <><dt>Belongs to</dt><dd>{label(row._context.type)} · {row._context.code ? `${row._context.code} ${row._context.name}` : '—'}</dd></>}
             {m.fields.map((f) => <Fragment key={f.n}><dt>{f.l ?? label(f.n)}</dt><dd style={{ whiteSpace: f.t === 'textarea' ? 'pre-wrap' : undefined }}>{cellValue(f, row, f.n)}</dd></Fragment>)}
-            {['score', 'rating', 'rice_score', 'wsjf_score', 'progress_pct', 'realisation_pct', 'days_to_expiry'].filter((k) => k in row).map((k) => <Fragment key={k}><dt>{label(k)} <span className="badge tiny">computed</span></dt><dd>{row[k] ?? <span className="muted">insufficient data</span>}</dd></Fragment>)}
+            {['score', 'rating', 'rice_score', 'wsjf_score', 'progress_pct', 'realisation_pct', 'days_to_expiry', 'emv', 'readiness_index', 'overall_score', 'quadrant', 'overdue'].filter((k) => k in row).map((k) => <Fragment key={k}><dt>{label(k)} <span className="badge tiny">computed</span></dt><dd>{row[k] ?? <span className="muted">insufficient data</span>}</dd></Fragment>)}
             <dt>Created</dt><dd>{fmtDateTime(row.created_at)}</dd><dt>Last updated</dt><dd>{fmtDateTime(row.updated_at)} · v{row.row_version}</dd>
           </dl>
         </>)}

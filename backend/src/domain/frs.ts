@@ -145,9 +145,16 @@ export function workingDaysBetween(a: string, b: string, holidays: Set<string>) 
   for (; d <= e; d.setUTCDate(d.getUTCDate() + 1)) if (isWorkingDay(d, holidays)) n++;
   return n;
 }
+/** Smallest working-day offset k such that addWorkingDays(anchor, k) falls on or after the status date (same convention as date mapping). */
+export function statusOffset(anchor: string, statusDate: string, holidays: Set<string>) {
+  if (statusDate <= anchor) return 0;
+  const d = new Date(anchor + 'T00:00:00Z'); let k = 0;
+  while (d.toISOString().slice(0, 10) < statusDate) { do { d.setUTCDate(d.getUTCDate() + 1); } while (!isWorkingDay(d, holidays)); k++; }
+  return k;
+}
 export const pert = (o?: number | null, m?: number | null, p?: number | null) => (o == null || m == null || p == null ? null : Math.round(((o + 4 * m + p) / 6) * 10) / 10);
 
-export interface Act { id: string; code: string; name: string; duration: number; start?: string | null; deps: { pred: string; type: 'FS' | 'SS' | 'FF' | 'SF'; lag: number }[] }
+export interface Act { id: string; code: string; name: string; duration: number; start?: string | null; minStart?: number; deps: { pred: string; type: 'FS' | 'SS' | 'FF' | 'SF'; lag: number }[] }
 /** Critical path method on working-day offsets. Returns ES/EF/LS/LF/total float and the critical path. Throws on cycles. */
 export function cpm(acts: Act[]) {
   const byId = new Map(acts.map((a) => [a.id, a]));
@@ -157,7 +164,7 @@ export function cpm(acts: Act[]) {
   if (order.length !== acts.length) throw unprocessable('Dependency cycle detected – the schedule cannot be computed');
   const es = new Map<string, number>(), ef = new Map<string, number>();
   for (const id of order) {
-    const a = byId.get(id)!; let start = 0;
+    const a = byId.get(id)!; let start = a.minStart ?? 0;
     for (const d of a.deps) {
       if (!byId.has(d.pred)) continue;
       const p = d.pred;
@@ -187,15 +194,18 @@ export async function projectSchedule(db: Db, ctx: Ctx, projectId: string) {
   const items = (await db.query(`SELECT * FROM work_items WHERE context_type='project' AND context_id=$1 AND deleted_at IS NULL AND status <> 'cancelled'`, [projectId])).rows;
   const deps = (await db.query(`SELECT d.* FROM work_dependencies d JOIN work_items w ON w.id=d.successor_id WHERE w.context_type='project' AND w.context_id=$1`, [projectId])).rows;
   const anchor = p.start_date ?? new Date().toISOString().slice(0, 10);
+  const statusDate = new Date().toISOString().slice(0, 10);
+  // Status date: remaining (not done) work cannot be scheduled before today.
+  const todayOffset = statusOffset(anchor, statusDate, holidays);
   const acts: Act[] = items.map((w) => {
     const est = pert(w.optimistic_days, w.most_likely_days, w.pessimistic_days);
     const dur = est ?? (w.start_date && w.due_date ? workingDaysBetween(w.start_date, w.due_date, holidays) : w.estimate_hours ? Math.ceil(Number(w.estimate_hours) / 8) : 1);
-    return { id: w.id, code: w.code, name: w.name, duration: Math.max(0, Math.round(dur)), start: w.start_date, deps: deps.filter((d) => d.successor_id === w.id).map((d) => ({ pred: d.predecessor_id, type: d.dep_type, lag: d.lag_days })) };
+    return { id: w.id, code: w.code, name: w.name, duration: w.status === 'done' ? 0 : Math.max(0, Math.round(dur)), start: w.start_date, minStart: w.status === 'done' ? 0 : todayOffset, deps: deps.filter((d) => d.successor_id === w.id).map((d) => ({ pred: d.predecessor_id, type: d.dep_type, lag: d.lag_days })) };
   });
   const r = cpm(acts);
   const withDates = r.activities.map((a) => ({ ...a, early_start: addWorkingDays(anchor, a.es, holidays), early_finish: addWorkingDays(anchor, Math.max(0, a.ef - 1), holidays), late_finish: addWorkingDays(anchor, Math.max(0, a.lf - 1), holidays), pert_estimate: pert(items.find((w) => w.id === a.id)?.optimistic_days, items.find((w) => w.id === a.id)?.most_likely_days, items.find((w) => w.id === a.id)?.pessimistic_days) }));
   const forecastFinish = addWorkingDays(anchor, Math.max(0, r.project_duration - 1), holidays);
-  return { anchor, project_duration_days: r.project_duration, forecast_finish: forecastFinish, planned_finish: p.end_date, baseline_finish: p.baseline_end,
+  return { anchor, status_date: statusDate, project_duration_days: r.project_duration, forecast_finish: forecastFinish, planned_finish: p.end_date, baseline_finish: p.baseline_end,
     slippage_days_vs_baseline: p.baseline_end ? Math.round((Date.parse(forecastFinish) - Date.parse(p.baseline_end)) / 864e5) : null, critical_path: r.critical_path, activities: withDates, dependencies: deps, holidays: holidays.size };
 }
 
