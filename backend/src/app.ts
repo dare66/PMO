@@ -47,7 +47,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   if (config.corsOrigin) await app.register(cors, { origin: config.corsOrigin.split(','), credentials: true });
   await app.register(cookie);
   await app.register(jwt, { secret: config.jwtSecret, sign: { expiresIn: `${config.sessionHours}h` } });
-  await app.register(rateLimit, { global: true, max: 600, timeWindow: '1 minute' });
+  await app.register(rateLimit, { global: true, max: Number(process.env.API_RATE_LIMIT ?? 600), timeWindow: '1 minute' });
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 + 1, files: 1 } });
 
   app.setErrorHandler((err: any, req, reply) => {
@@ -224,7 +224,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     r.get('/api/workflows/definitions', async (req) => (await pool.query(`SELECT DISTINCT ON (key) * FROM workflow_definitions WHERE org_id=$1 ORDER BY key, version DESC`, [C(req).orgId])).rows);
     r.post('/api/workflows/definitions', async (req) => {
       const c = C(req); requirePerm(c, 'admin:workflows');
-      const stage = z.object({ key: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), description: z.string().optional(), entry: z.array(z.string()).optional(), exit: z.array(z.string()).optional(), deliverables: z.array(z.string()).optional(), approvals: z.array(z.object({ role: z.string(), type: z.string().optional() })).optional(), sets: z.record(z.string()).optional() });
+      const stage = z.object({ key: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), description: z.string().optional(), entry: z.array(z.string()).optional(), exit: z.array(z.string()).optional(), deliverables: z.array(z.string()).optional(), approvals: z.array(z.object({ role: z.string(), type: z.string().optional() })).optional(), sets: z.record(z.string(), z.string()).optional() });
       const b = parse(z.object({ key: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), description: z.string().optional(), entity_type: z.string(), stages: z.array(stage).min(1) }), req.body);
       if (!getResource(b.entity_type)) throw badRequest('Unknown entity_type');
       return tx(async (db) => {

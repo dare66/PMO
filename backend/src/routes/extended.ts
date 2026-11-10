@@ -59,7 +59,7 @@ export function registerExtendedRoutes(r: FastifyInstance) {
   r.get('/api/views', async (req) => { const c = C(req); const q = req.query as any; return (await pool.query(`SELECT v.*, u.name AS owner_name FROM saved_views v JOIN users u ON u.id=v.user_id WHERE v.org_id=$1 AND v.resource=$2 AND (v.user_id=$3 OR v.shared) ORDER BY v.name`, [c.orgId, q.resource ?? '', c.userId])).rows; });
   r.post('/api/views', async (req, reply) => {
     const c = C(req);
-    const b = parse(z.object({ resource: z.string(), name: z.string().min(1).max(80), filters: z.record(z.string().max(500)), shared: z.boolean().default(false) }), req.body);
+    const b = parse(z.object({ resource: z.string(), name: z.string().min(1).max(80), filters: z.record(z.string(), z.string().max(500)), shared: z.boolean().default(false) }), req.body);
     if (!getResource(b.resource)) throw badRequest('Unknown resource'); requirePerm(c, `${b.resource}:read`);
     reply.status(201);
     return (await pool.query(`INSERT INTO saved_views (org_id, user_id, resource, name, filters, shared) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (user_id, resource, name) DO UPDATE SET filters=EXCLUDED.filters, shared=EXCLUDED.shared RETURNING *`, [c.orgId, c.userId, b.resource, b.name, JSON.stringify(b.filters), b.shared])).rows[0];
@@ -106,7 +106,7 @@ export function registerExtendedRoutes(r: FastifyInstance) {
   });
   r.put('/api/tender-bids/:id/scores', async (req) => {
     const c = C(req); requirePerm(c, 'tender_bids:write');
-    const b = parse(z.object({ scores: z.record(z.number().min(0).max(10)) }), req.body);
+    const b = parse(z.object({ scores: z.record(z.string(), z.number().min(0).max(10)) }), req.body);
     const bid = await getRow(c, 'tender_bids', (req.params as any).id);
     const conflictDecl = (await pool.query(`SELECT 1 FROM coi_declarations WHERE tender_id=$1 AND user_id=$2 AND has_conflict`, [bid.tender_id, c.userId])).rowCount;
     if (conflictDecl) throw forbidden('You declared a conflict of interest for this tender and cannot score bids');

@@ -117,7 +117,7 @@ export function ScheduleTab({ project, onChanged }: { project: any; onChanged: (
       {s.error ? <ErrorBox error={s.error} retry={s.reload} /> : s.loading ? <LoadingBlock rows={5} /> : !s.data.activities.length ? <Empty title="No scheduled work">Add work items to this project to compute a schedule.</Empty> : <>
         <div className="small" style={{ marginBottom: 8 }}>Critical path: {s.data.critical_path.length ? s.data.critical_path.map((c: string) => <span key={c} className="cite">{c}</span>) : '—'}</div>
         <div className="table-wrap"><table className="data compact"><caption className="sr-only">Critical path method results</caption><thead><tr><th scope="col">Item</th><th scope="col" className="num">Duration (d)</th><th scope="col">Early start</th><th scope="col">Early finish</th><th scope="col">Late finish</th><th scope="col" className="num">Float (d)</th><th scope="col">PERT</th></tr></thead>
-          <tbody>{s.data.activities.map((a: any) => <tr key={a.id} className={a.critical ? 'crit-row' : ''}><td><span className="mono small">{a.code}</span> {a.name}{a.critical && <span className="badge crit" style={{ marginLeft: 6 }}>critical</span>}</td><td className="num">{a.duration}</td><td>{fmtDate(a.early_start)}</td><td>{fmtDate(a.early_finish)}</td><td>{fmtDate(a.late_finish)}</td><td className="num">{a.total_float}</td><td>{a.pert_estimate ?? <span className="muted">—</span>}</td></tr>)}</tbody></table></div>
+          <tbody>{s.data.activities.map((a: any) => <tr key={a.id} className={a.critical ? 'crit-row' : ''}><td><span className="mono small">{a.code}</span> {a.name}{a.critical && <span className="badge crit" style={{ marginLeft: 6 }}>critical</span>}{a.done && <span className="badge good" style={{ marginLeft: 6 }}>done</span>}</td><td className="num">{a.done ? '—' : a.duration}</td><td>{a.done ? '—' : fmtDate(a.early_start)}</td><td>{a.done ? '—' : fmtDate(a.early_finish)}</td><td>{a.done ? '—' : fmtDate(a.late_finish)}</td><td className="num">{a.done ? '—' : a.total_float}</td><td>{a.pert_estimate ?? <span className="muted">—</span>}</td></tr>)}</tbody></table></div>
       </>}
     </Card>
     <Card title="Baseline history" sub="Immutable. A new version is created by an approved change request.">
@@ -241,7 +241,7 @@ export function ProductHealthPanel({ product }: { product: any }) {
   const ctxP = { product_id: product.id };
   return (<div className="col" style={{ gap: 14 }}>
     {h.error ? <ErrorBox error={h.error} /> : h.loading ? <LoadingBlock rows={2} /> : <div className="grid g4">
-      <div className="card kpi"><div className="label">Product health</div><div className="value"><Rag v={h.data.overall} /></div><div className="small">{h.data.metrics_on_track_pct === null ? 'No measurable metrics' : `${h.data.metrics_on_track_pct}% of metrics on target`}</div></div>
+      <div className="card kpi"><div className="label">Metric-based health</div><div className="value"><Rag v={h.data.overall} /></div><div className="small">{h.data.metrics_on_track_pct === null ? 'No measurable metrics' : `${h.data.metrics_on_track_pct}% of defined metrics on target`} · separate from the composite health score above</div></div>
       <Kpi label="Open high defects" value={fmtNum(h.data.open_high_defects)} />
       <Kpi label="Technical debt" value={`${h.data.tech_debt.n} items`} foot={`${h.data.tech_debt.high} high/critical`} />
       <Kpi label="Data gaps" value={fmtNum(h.data.data_gaps.length)} foot={h.data.data_gaps.slice(0, 2).join('; ') || 'None'} />

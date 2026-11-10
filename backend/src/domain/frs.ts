@@ -203,10 +203,11 @@ export async function projectSchedule(db: Db, ctx: Ctx, projectId: string) {
     return { id: w.id, code: w.code, name: w.name, duration: w.status === 'done' ? 0 : Math.max(0, Math.round(dur)), start: w.start_date, minStart: w.status === 'done' ? 0 : todayOffset, deps: deps.filter((d) => d.successor_id === w.id).map((d) => ({ pred: d.predecessor_id, type: d.dep_type, lag: d.lag_days })) };
   });
   const r = cpm(acts);
-  const withDates = r.activities.map((a) => ({ ...a, early_start: addWorkingDays(anchor, a.es, holidays), early_finish: addWorkingDays(anchor, Math.max(0, a.ef - 1), holidays), late_finish: addWorkingDays(anchor, Math.max(0, a.lf - 1), holidays), pert_estimate: pert(items.find((w) => w.id === a.id)?.optimistic_days, items.find((w) => w.id === a.id)?.most_likely_days, items.find((w) => w.id === a.id)?.pessimistic_days) }));
+  const statusOf = new Map(items.map((w) => [w.id, w.status]));
+  const withDates = r.activities.map((a) => ({ ...a, done: statusOf.get(a.id) === 'done', critical: a.critical && statusOf.get(a.id) !== 'done', early_start: addWorkingDays(anchor, a.es, holidays), early_finish: addWorkingDays(anchor, Math.max(0, a.ef - 1), holidays), late_finish: addWorkingDays(anchor, Math.max(0, a.lf - 1), holidays), pert_estimate: pert(items.find((w) => w.id === a.id)?.optimistic_days, items.find((w) => w.id === a.id)?.most_likely_days, items.find((w) => w.id === a.id)?.pessimistic_days) }));
   const forecastFinish = addWorkingDays(anchor, Math.max(0, r.project_duration - 1), holidays);
   return { anchor, status_date: statusDate, project_duration_days: r.project_duration, forecast_finish: forecastFinish, planned_finish: p.end_date, baseline_finish: p.baseline_end,
-    slippage_days_vs_baseline: p.baseline_end ? Math.round((Date.parse(forecastFinish) - Date.parse(p.baseline_end)) / 864e5) : null, critical_path: r.critical_path, activities: withDates, dependencies: deps, holidays: holidays.size };
+    slippage_days_vs_baseline: p.baseline_end ? Math.round((Date.parse(forecastFinish) - Date.parse(p.baseline_end)) / 864e5) : null, critical_path: r.critical_path.filter((c) => statusOf.get(r.activities.find((a) => a.code === c)!.id) !== 'done'), activities: withDates, dependencies: deps, holidays: holidays.size };
 }
 
 // ------------------------------------------------------------------ sprints (FR-SCH-012)

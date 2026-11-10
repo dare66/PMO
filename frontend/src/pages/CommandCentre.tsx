@@ -78,7 +78,7 @@ export function CommandCentre() {
         </Card></div>
         <div className="span-7"><Card title="Top risks & critical issues" sub="Highest exposure first">
           <div className="stack-list">
-            {d.top_risks.map((r: any) => <div key={r.id} className="list-row" style={{ cursor: 'pointer' }} onClick={() => nav(`/r/risks?open=${r.id}`)}><span className="badge" style={{ background: riskColor(r.likelihood, r.impact, 1), minWidth: 34, justifyContent: 'center' }}>{r.score}</span><span className="mono muted">{r.code}</span><span style={{ flex: 1 }}>{r.name}</span><span className="badge">{label(r.category)}</span></div>)}
+            {d.top_risks.map((r: any) => <div key={r.id} className="list-row" style={{ cursor: 'pointer' }} onClick={() => nav(`/r/risks?open=${r.id}`)}><span className="badge" style={{ background: riskColor(r.likelihood, r.impact, 1), color: 'var(--text)', minWidth: 34, justifyContent: 'center' }}>{r.score}</span><span className="mono muted">{r.code}</span><span style={{ flex: 1 }}>{r.name}</span><span className="badge">{label(r.category)}</span></div>)}
             {d.critical_issues.slice(0, 3).map((i: any) => <div key={i.id} className="list-row"><AlertOctagon size={16} color="var(--crit)" /><span className="mono muted">{i.code}</span><span style={{ flex: 1 }}>{i.name}</span><Status v={i.severity} /><span className="small muted">due {fmtDate(i.due_date)}</span></div>)}
           </div>
         </Card></div>

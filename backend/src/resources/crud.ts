@@ -178,7 +178,7 @@ export async function createRow(ctx: Ctx, key: string, body: unknown, opts: { db
   requirePerm(ctx, `${key}:write`);
   const parsed = schemaFor(def, 'create').safeParse(body ?? {});
   if (!parsed.success) throw badRequest('Validation failed', formatZod(parsed.error));
-  const data: Record<string, any> = { ...parsed.data };
+  const data: Record<string, any> = { ...(parsed.data as Record<string, any>) };
   delete data.row_version;
   for (const fd of def.fields) if (data[fd.n] === undefined && fd.def !== undefined && !fd.ro) data[fd.n] = fd.def;
   if (def.contexts && def.contextRequired && !data.context_type) throw badRequest('context_type is required', [{ field: 'context_type', message: 'Required' }]);
@@ -206,7 +206,7 @@ export async function updateRow(ctx: Ctx, key: string, id: string, body: unknown
   requirePerm(ctx, `${key}:write`);
   const parsed = schemaFor(def, 'update').safeParse(body ?? {});
   if (!parsed.success) throw badRequest('Validation failed', formatZod(parsed.error));
-  const data: Record<string, any> = { ...parsed.data };
+  const data: Record<string, any> = { ...(parsed.data as Record<string, any>) };
   const expected = data.row_version; delete data.row_version;
   if (!Object.keys(data).length) throw badRequest('No changes supplied');
   if (!opts.skipGuards && data.status && GUARDED_STATUS[key]?.includes(data.status)) throw unprocessable(`Status "${data.status}" can only be set through the approval workflow`);

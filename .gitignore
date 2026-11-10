@@ -4,3 +4,4 @@ dist/
 *.log
 coverage/
 docs/screenshots/*.tmp.png
+backups/

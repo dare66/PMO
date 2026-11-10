@@ -41,6 +41,7 @@ services:
       AI_MONTHLY_TOKEN_BUDGET: ${AI_MONTHLY_TOKEN_BUDGET:-2000000}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-10}
+      API_RATE_LIMIT: ${API_RATE_LIMIT:-600}
     volumes: [files:/data/files]
     networks: [backend, frontend]
 

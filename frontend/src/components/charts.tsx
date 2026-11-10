@@ -3,7 +3,7 @@
  * fixed categorical order, one axis, legend for >= 2 series, hover tooltip, table alternative,
  * thin marks with rounded data-ends, recessive grid, text in ink colours, empty/missing handled.
  */
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useEffect, useRef } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis, ReferenceLine, LabelList } from 'recharts';
 import { Table2, BarChart3 } from 'lucide-react';
 import { Empty } from './ui';
@@ -13,6 +13,18 @@ export const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(
 export const RAG_COLOR: Record<string, string> = { green: 'var(--good)', amber: 'var(--warn)', red: 'var(--crit)', unknown: 'var(--unknown)' };
 
 export interface SeriesDef { key: string; name: string; color?: string; fmt?: (v: number) => string }
+
+/** Hides the drawn SVG from assistive tech when an equivalent data table exists; legends and buttons stay reachable. */
+function ChartBody({ height, hideGraphic, children }: { height: number; hideGraphic: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el || !hideGraphic) return;
+    const apply = () => el.querySelectorAll('svg').forEach((svg) => { if (svg.getAttribute('aria-hidden') !== 'true') { svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false'); } });
+    apply(); const mo = new MutationObserver(apply); mo.observe(el, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, [hideGraphic]);
+  return <div ref={ref} style={{ height }}>{children}</div>;
+}
 
 export function ChartFrame({ title, sub, legend, children, table, height = 260, empty, actions }: { title?: string; sub?: string; legend?: SeriesDef[]; children: ReactNode; table?: { headers: string[]; rows: (string | number | null)[][] }; height?: number; empty?: boolean; actions?: ReactNode }) {
   const [asTable, setAsTable] = useState(false);
@@ -31,7 +43,8 @@ export function ChartFrame({ title, sub, legend, children, table, height = 260, 
             <div className="table-wrap" style={{ maxHeight: height + 40 }}><table className="data"><thead><tr>{table.headers.map((h) => <th key={h}>{h}</th>)}</tr></thead><tbody>{table.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} className={typeof c === 'number' ? 'num' : ''}>{c === null ? '—' : typeof c === 'number' ? fmtNum(c, 2) : c}</td>)}</tr>)}</tbody></table></div>
           ) : (<>
             {legend && legend.length > 1 && <div className="legend" style={{ marginBottom: 8 }}>{legend.map((s, i) => <span key={s.key}><i style={{ background: s.color ?? SERIES[i] }} />{s.name}</span>)}</div>}
-            <div style={{ height }}>{children}</div>
+            <ChartBody height={height} hideGraphic={!!table}>{children}</ChartBody>
+            {table && <table className="sr-only"><caption>{title} – data</caption><thead><tr>{table.headers.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead><tbody>{table.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c === null ? '—' : String(c)}</td>)}</tr>)}</tbody></table>}
           </>)}
       </div>
     </section>
@@ -91,15 +104,15 @@ export function Donut({ data, center, sub, fmt, onClick }: { data: { name: strin
       <div style={{ position: 'relative', height: '100%' }}>
         <ResponsiveContainer>
           <PieChart>
-            <Pie data={data.filter((d) => d.value > 0)} dataKey="value" nameKey="name" innerRadius="64%" outerRadius="92%" paddingAngle={2} stroke="var(--surface)" strokeWidth={2} cornerRadius={4} onClick={onClick} isAnimationActive>
-              {data.filter((d) => d.value > 0).map((d) => <Cell key={d.name} fill={d.color} style={{ cursor: onClick ? 'pointer' : 'default' }} />)}
+            <Pie rootTabIndex={-1} data={data.filter((d) => d.value > 0)} dataKey="value" nameKey="name" innerRadius="64%" outerRadius="92%" paddingAngle={2} stroke="var(--surface)" strokeWidth={2} cornerRadius={4} onClick={onClick} isAnimationActive>
+              {data.filter((d) => d.value > 0).map((d) => <Cell key={d.name} fill={d.color} aria-label={`${d.name}: ${fmt ? fmt(d.value) : d.value}`} style={{ cursor: onClick ? 'pointer' : 'default' }} />)}
             </Pie>
             <Tooltip content={<Tip fmt={fmt} title={(p: any) => p.name} />} />
           </PieChart>
         </ResponsiveContainer>
         <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', pointerEvents: 'none', textAlign: 'center' }}><div><div style={{ fontSize: 24, fontWeight: 700 }} className="num">{center ?? total}</div>{sub && <div className="tiny muted">{sub}</div>}</div></div>
       </div>
-      <div className="col" style={{ gap: 6 }}>{data.map((d) => <div key={d.name} className="row small" style={{ gap: 8 }}><i style={{ width: 10, height: 10, borderRadius: 3, background: d.color, display: 'inline-block' }} /><span style={{ minWidth: 70 }}>{d.name}</span><b className="num">{fmt ? fmt(d.value) : d.value}</b></div>)}</div>
+      <div className="col" style={{ gap: 6 }}>{data.map((d) => { const inner = <><i aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 3, background: d.color, display: 'inline-block' }} /><span style={{ minWidth: 70 }}>{d.name}</span><b className="num">{fmt ? fmt(d.value) : d.value}</b></>; return onClick ? <button key={d.name} type="button" className="row small legend-btn" style={{ gap: 8 }} onClick={() => onClick(d)}>{inner}</button> : <div key={d.name} className="row small" style={{ gap: 8 }}>{inner}</div>; })}</div>
     </div>
   );
 }
@@ -163,18 +176,18 @@ export function Heatmap({ rows, cols, value, color, rowLabel, colLabel, onCell, 
   return (
     <div>
       <div className="heat" style={{ gridTemplateColumns: `minmax(90px, auto) repeat(${cols.length}, minmax(34px, 1fr))` }} role="table" aria-label={`${yTitle ?? ''} by ${xTitle ?? ''}`}>
-        <div className="axis tiny" role="columnheader">{yTitle} \ {xTitle}</div>
-        {cols.map((c) => <div key={c} className="axis" role="columnheader">{colLabel ? colLabel(c) : c}</div>)}
-        {rows.map((r, ri) => [
+        <div role="row" style={{ display: 'contents' }}><div className="axis tiny" role="columnheader">{yTitle} \ {xTitle}</div>
+        {cols.map((c) => <div key={c} className="axis" role="columnheader">{colLabel ? colLabel(c) : c}</div>)}</div>
+        {rows.map((r, ri) => <div key={`row${ri}`} role="row" style={{ display: 'contents' }}>{[
           <div key={`l${ri}`} className="axis" style={{ justifyItems: 'end', placeItems: 'center end', paddingRight: 6 }} role="rowheader">{rowLabel ? rowLabel(r) : r}</div>,
           ...cols.map((c, ci) => { const v = value(ri, ci); const bg = color(v, ri, ci); return <div key={`${ri}-${ci}`} role="cell" className="cell" title={`${r} / ${c}: ${v ?? 'no data'}`} aria-label={`${r} / ${c}: ${v ?? 'no data'}`} tabIndex={onCell ? 0 : undefined} style={{ background: bg, color: textColor ? textColor(v) : 'var(--text)', cursor: onCell ? 'pointer' : 'default' }} onClick={onCell ? () => onCell(ri, ci) : undefined} onKeyDown={onCell ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCell(ri, ci); } } : undefined}>{cellText ? cellText(v) : v ?? ''}</div>; }),
-        ])}
+        ]}</div>)}
       </div>
     </div>
   );
 }
 /** Ink that stays readable on the sequential ramp (white on the darker half). */
-export const seqText = (v: number | null, max: number) => (v !== null && v > 0 && Math.floor((v / Math.max(1, max)) * 5) >= 3 ? '#fff' : 'var(--text)');
+export const seqText = (v: number | null, max: number) => (v !== null && v > 0 && Math.floor((v / Math.max(1, max)) * 5) >= 4 ? 'var(--q-ink-hi)' : 'var(--text)');
 export const seqColor = (v: number | null, max: number) => {
   if (v === null) return 'repeating-linear-gradient(135deg, var(--surface-2) 0 4px, var(--surface-3) 4px 8px)';
   if (v <= 0) return 'var(--surface-2)';

@@ -119,7 +119,7 @@ export function BiaDetail() {
       </div>}
     </Card>}
     {tab === 'recovery' && <div className="col" style={{ gap: 14 }}>
-      <ChartFrame title="Recovery timeline" sub="Achievable recovery time per strategy vs RTO (dashed) and MTPD (solid)" height={200} empty={!a.strategies.length}>
+      <ChartFrame title="Recovery timeline" sub="Achievable recovery time per strategy vs RTO (dashed) and MTPD (solid)" height={200} empty={!a.strategies.length} table={{ headers: ['Strategy', 'Achievable recovery (h)'], rows: a.strategies.map((s: any) => [s.name, s.achievable_rto_hours]) }}>
         <BarsChart horizontal data={a.strategies.map((s: any) => ({ name: s.name, h: s.achievable_rto_hours }))} x="name" series={[{ key: 'h', name: 'Achievable recovery (h)', color: 'var(--s3)' }]} />
       </ChartFrame>
       <DataTable resource="recovery_strategies" filters={{ bia_id: b.id }} title="Recovery strategies & tests" />
@@ -144,7 +144,7 @@ export function ProcessesPage() {
       <div className="span-4"><Card title="Processes" bodyClass="">{(data?.data ?? []).map((p: any) => <button key={p.id} className="list-row" style={{ width: '100%', border: 'none', padding: '10px 16px', background: sel === p.id ? 'var(--brand-50)' : 'transparent', font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer' }} onClick={() => setSel(p.id)}><div style={{ flex: 1 }}><b>{p.name}</b><div className="tiny muted">{p.code} · v{p.version_label} · {label(p.process_state)} · {p._refs.department_id?.name ?? ''}</div></div><Status v={p.criticality} /></button>)}</Card></div>
       <div className="span-8"><Card title="Swimlane process map" sub="Generated from process steps (BPMN-style: start ○, task ▭, decision ◇, end ◉)">
         {!s.length ? <Empty title="No steps modelled" art="chart">Add process steps (sequence, lane, type, next steps) to render the map.</Empty> : (
-          <div style={{ overflowX: 'auto' }}><svg width={W} height={lanes.length * laneH} role="img" aria-label="Process swimlane diagram">
+          <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="Process swimlane diagram (scrollable)"><svg width={W} height={lanes.length * laneH} role="img" aria-label="Process swimlane diagram">
             <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker></defs>
             {lanes.map((l, i) => <g key={l}><rect x={0} y={i * laneH} width={W} height={laneH} fill={i % 2 ? 'var(--surface-2)' : 'var(--surface)'} stroke="var(--border)" /><rect x={0} y={i * laneH} width={100} height={laneH} fill="var(--brand-50)" stroke="var(--border)" /><text x={50} y={i * laneH + laneH / 2} textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600} fill="var(--brand)">{l}</text></g>)}
             {s.flatMap((x: any) => (x.next_step_seq ?? []).map((n: number) => { const t = s.find((y: any) => y.seq === n); if (!t) return null; const a = pos(x), b2 = pos(t); return <path key={`${x.id}-${n}`} d={`M${a.x + 50},${a.y} C${a.x + 90},${a.y} ${b2.x - 90},${b2.y} ${b2.x - 52},${b2.y}`} fill="none" stroke="var(--text-3)" strokeWidth={1.5} markerEnd="url(#arr)" />; }))}

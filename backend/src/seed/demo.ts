@@ -403,7 +403,7 @@ export async function seedDemo() {
     for (const [g, dim, mag, hc] of [['Branch tellers', 'process', 4, 320], ['Contact centre agents', 'technology', 3, 140], ['Merchant acquirers', 'service', 2, null]] as const)
       await ins('ocm_impacts', 'OCI', { name: `Impact on ${g}`, context_type: 'project', context_id: P2.id, impacted_group: g, dimension: dim, magnitude: mag, headcount: hc, owner_id: U.pm2 });
     for (const [d, a, u, w, ab, r] of [[-60, 2, 2, 3, 2, 1], [-20, 4, 3, 3, 3, 2]] as const)
-      await ins('readiness_assessments', 'RDY', { name: `Readiness pulse ${d}`, context_type: 'project', context_id: P2.id, assessed_on: day(d), respondents: 85, awareness: a, understanding: u, willingness: w, ability: ab, reinforcement: r, owner_id: U.pm2 });
+      await ins('readiness_assessments', 'RDY', { name: `Readiness pulse ${day(d)}`, context_type: 'project', context_id: P2.id, assessed_on: day(d), respondents: 85, awareness: a, understanding: u, willingness: w, ability: ab, reinforcement: r, owner_id: U.pm2 });
     await ins('training_activities', 'TRN', { name: 'New switch operations training', context_type: 'project', context_id: P2.id, audience: 'Operations', planned_date: day(-5), delivered_date: day(-5), attendees_planned: 40, attendees_actual: 34, assessment_pass_pct: 91, status: 'delivered', owner_id: U.pm2 });
     await ins('contract_milestones', 'CMS', { name: 'Switch integration acceptance', contract_id: cPay.id, due_date: day(15), amount: 400000, deliverable: 'Certified integration in UAT', status: 'delivered', owner_id: U.procurement });
     for (const [i, n] of ['Freeze changes', 'Final data reconciliation', 'Switch DNS to new gateway', 'Smoke test authorisations', 'Go/no-go confirmation'].entries())

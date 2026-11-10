@@ -12,7 +12,7 @@
   --surface: #ffffff; --surface-2: #f8f9fb; --surface-3: #eef0f5; --glass: rgba(255,255,255,.72);
   --border: #e3e6ee; --border-strong: #cfd4df;
   /* ink */
-  --text: #12141c; --text-2: #4a5065; --text-3: #6b7287; --text-inv: #fff;
+  --text: #12141c; --text-2: #4a5065; --text-3: #5f6578; --text-inv: #fff;
   /* brand */
   --brand: #2747d6; --brand-600: #1f3ab4; --brand-50: #eef1ff; --brand-100: #dfe5ff; --accent: #0e9f9a; --accent-50: #e5f7f6;
   /* status (fixed) – always paired with icon + label */
@@ -24,7 +24,7 @@
   /* categorical series (fixed order) */
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
   /* sequential blue */
-  --q100: #cde2fb; --q200: #9ec5f4; --q300: #6da7ec; --q400: #3987e5; --q500: #256abf; --q600: #184f95; --q700: #0d366b;
+  --q-ink-hi: #fff; --q100: #cde2fb; --q200: #9ec5f4; --q300: #6da7ec; --q400: #3987e5; --q500: #256abf; --q600: #184f95; --q700: #0d366b;
   --grid: #e8eaf0; --axis: #8a90a2;
   /* shape */
   --r-sm: 6px; --r: 10px; --r-lg: 14px; --r-xl: 20px;
@@ -45,7 +45,7 @@
   --brand: #6f86ff; --brand-600: #8b9dff; --brand-50: #1d2442; --brand-100: #27305a; --accent: #2cc4be; --accent-50: #12302f;
   --good-ink: #5bd35b; --good-bg: #13301a; --warn-ink: #ffd06b; --warn-bg: #3a2d0e; --serious-ink: #ffab88; --serious-bg: #3b2218; --crit-ink: #ff8a8a; --crit-bg: #3a1a1c; --unknown-ink: #c2c6d3; --unknown-bg: #262a35;
   --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
-  --q100: #104281; --q200: #184f95; --q300: #1c5cab; --q400: #256abf; --q500: #3987e5; --q600: #6da7ec; --q700: #9ec5f4;
+  --q-ink-hi: #0b0e1a; --q100: #104281; --q200: #184f95; --q300: #1c5cab; --q400: #256abf; --q500: #3987e5; --q600: #6da7ec; --q700: #9ec5f4;
   --grid: #2a2f3b; --axis: #7d8396;
   --sh-1: 0 1px 2px rgba(0,0,0,.4); --sh-2: 0 6px 16px -4px rgba(0,0,0,.5); --sh-3: 0 20px 40px -12px rgba(0,0,0,.7);
 }
@@ -292,3 +292,10 @@ pre.diff { font-family: var(--mono); background: var(--surface-2); border: 1px s
 .pipeline .tile { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px; margin-bottom: 6px; font: inherit; color: inherit; cursor: pointer; }
 .pipeline .tile:hover, .pipeline .tile:focus-visible { border-color: var(--brand); outline: none; box-shadow: var(--ring); }
 .crit-row td:first-child { box-shadow: inset 3px 0 0 var(--crit); }
+
+/* dark theme: brand is light enough for text, so primary buttons use dark ink for ≥4.5:1 */
+:root[data-theme="dark"] .btn.primary { color: #0b0e1a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0b0e1a; } }
+
+.legend-btn { background: none; border: 0; padding: 2px 4px; margin: 0 -4px; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: var(--r-sm); }
+.legend-btn:hover, .legend-btn:focus-visible { background: var(--surface-2); outline: none; box-shadow: var(--ring); }

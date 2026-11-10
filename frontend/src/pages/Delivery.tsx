@@ -26,7 +26,7 @@ export function Board({ filters }: { filters: Record<string, string> }) {
   if (error) return <ErrorBox error={error} retry={reload} />;
   if (loading && !data) return <LoadingBlock />;
   return (<>
-    <div className="board" role="list" aria-label="Work board">
+    <div className="board" role="list" aria-label="Work board" tabIndex={0}>
       {LANES.map((lane) => { const items = (data?.data ?? []).filter((w: any) => w.status === lane); return (
         <div key={lane} className={`lane ${over === lane ? 'over' : ''}`} role="listitem" aria-label={`${label(lane)} (${items.length})`}
           onDragOver={(e) => { e.preventDefault(); setOver(lane); }} onDragLeave={() => setOver(null)} onDrop={(e) => { setOver(null); const id = e.dataTransfer.getData('text/plain'); const it = data.data.find((w: any) => w.id === id); if (it) move(it, lane); }}>
@@ -70,7 +70,7 @@ export function RaidPage() {
     <Tabs value={tab} onChange={setTab} tabs={[{ key: 'risks', label: 'Risks' }, { key: 'issues', label: 'Issues' }, { key: 'assumptions', label: 'Assumptions' }, { key: 'dependencies', label: 'Dependencies' }]} />
     {tab === 'risks' && <DataTable resource="risks" filters={filters} columns={[
       { key: 'code', label: 'ID', render: (r) => <span className="mono">{r.code}</span> }, { key: 'name', label: 'Risk', sortable: true }, { key: 'category', label: 'Category', render: (r) => label(r.category) },
-      { key: 'score', label: 'Score', num: true, render: (r) => <span className="badge" style={{ background: riskColor(r.likelihood, r.impact, 1) }}>{r.score} · {label(r.rating)}</span> },
+      { key: 'score', label: 'Score', num: true, render: (r) => <span className="badge" style={{ background: riskColor(r.likelihood, r.impact, 1), color: 'var(--text)' }}>{r.score} · {label(r.rating)}</span> },
       { key: 'residual_score', label: 'Residual', num: true, render: (r) => r.residual_score ?? '—' }, { key: '_context', label: 'Belongs to', render: (r) => r._context?.code ? `${r._context.code} ${r._context.name}` : label(r.context_type) },
       { key: 'treatment', label: 'Treatment', render: (r) => <>{label(r.treatment)}{r.acceptance_status && <span className="badge" style={{ marginLeft: 4 }}>acceptance {r.acceptance_status}</span>}</> }, { key: 'owner_id', label: 'Owner', render: (r) => r._refs.owner_id?.name ?? '—' }, { key: 'status', label: 'Status', sortable: true },
     ]} />}
@@ -88,7 +88,7 @@ export function ChangesPage() {
     <PageHead title="Change control" sub="Every change request automatically triggers the impact assessments it needs (schedule, cost, scope, risk, BIA, security, operations, vendor) before it can be decided." />
     <div className="grid g-12" style={{ marginBottom: 14 }}>
       <div className="span-4"><Kpi label="Impact assessments pending" value={pending.length} foot="Across all open change requests" /></div>
-      <div className="span-8"><ChartFrame title="Pending assessments by area" height={160} empty={!byArea.length}><BarsChart data={byArea} x="name" series={[{ key: 'value', name: 'Pending' }]} /></ChartFrame></div>
+      <div className="span-8"><ChartFrame title="Pending assessments by area" height={160} empty={!byArea.length} table={{ headers: ['Area', 'Pending'], rows: byArea.map((b: any) => [b.name, b.value]) }}><BarsChart data={byArea} x="name" series={[{ key: 'value', name: 'Pending' }]} /></ChartFrame></div>
     </div>
     <DataTable resource="change_requests" />
     <div style={{ height: 14 }} />
@@ -142,7 +142,7 @@ export function OperationsPage() {
   return (<>
     <PageHead title="Operational & service work" sub="Incidents, service requests, problems, maintenance, remediation and BAU. Linked to services, products or nothing at all – never forced into a project." actions={<Seg ariaLabel="View" value={view} onChange={setView} options={[{ key: 'table', label: 'Table' }, { key: 'board', label: 'Board' }]} />} />
     <div className="grid g-12" style={{ marginBottom: 14 }}>
-      <div className="span-4"><ChartFrame title="Open work by type" height={200} empty={!byType.length}><Donut data={byType.map((b, i) => ({ ...b, color: SERIES[i % 8] }))} sub="open items" /></ChartFrame></div>
+      <div className="span-4"><ChartFrame title="Open work by type" height={200} empty={!byType.length} table={{ headers: ['Type', 'Open items'], rows: byType.map((b: any) => [b.name, b.value]) }}><Donut data={byType.map((b, i) => ({ ...b, color: SERIES[i % 8] }))} sub="open items" /></ChartFrame></div>
       <div className="span-8"><Card title="Filter"><div className="chip-row"><button className={`btn sm ${!type ? 'primary' : ''}`} onClick={() => setType('')}>All operational</button>{OPS_TYPES.map((t) => <button key={t} className={`btn sm ${type === t ? 'primary' : ''}`} onClick={() => setType(t)}>{label(t)}</button>)}</div></Card></div>
     </div>
     {view === 'table' ? <DataTable resource="work_items" filters={filters} createPreset={{ work_type: type || 'incident', context_type: 'service' }} /> : <Board filters={filters} />}

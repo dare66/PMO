@@ -42,7 +42,7 @@ export function RefSelect({ resource, value, onChange, id, placeholder, invalid 
     api.get(`/api/r/${resource}?pageSize=500&sort=name:asc`).then((r) => setOpts(r.data)).catch(() => setOpts([]));
   }, [resource, users, meta]);
   return (
-    <select id={id} className="input" value={value ?? ''} aria-invalid={invalid} onChange={(e) => onChange(e.target.value || null)}>
+    <select id={id} className="input" value={value ?? ''} aria-invalid={invalid} aria-label={id ? undefined : (placeholder ?? `Select ${resource.replace(/_/g, ' ')}`)} onChange={(e) => onChange(e.target.value || null)}>
       <option value="">{placeholder ?? '— none —'}</option>
       {opts.map((o) => <option key={o.id} value={o.id}>{o.code} · {o.name}</option>)}
     </select>

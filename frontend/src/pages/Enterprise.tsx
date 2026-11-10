@@ -42,13 +42,13 @@ export function PortfolioPage() {
     <Tabs value={tab} onChange={setTab} tabs={[{ key: 'overview', label: 'Overview' }, { key: 'health', label: 'Health heatmap' }, { key: 'portfolios', label: 'Portfolios' }]} />
     {tab === 'overview' && <div className="grid g-12">
       {d.investment.map((i: any, k: number) => { const used = i.approved_budget ? (i.actual / i.approved_budget) * 100 : null; const demand = (i.actual ?? 0) + (i.commitment ?? 0) + (i.forecast ?? 0); return (
-        <div key={i.id} className="span-4"><Card title={i.name} sub={`${i.code} · ${i.theme ?? '—'} theme`} actions={<span className="badge" style={{ background: SERIES[k], color: '#fff' }}>{fmtMoney(i.envelope, cur)} envelope</span>}>
+        <div key={i.id} className="span-4"><Card title={i.name} sub={`${i.code} · ${i.theme ?? '—'} theme`} actions={<span className="badge outline"><i aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 2, background: SERIES[k], display: 'inline-block', marginRight: 6 }} />{fmtMoney(i.envelope, cur)} envelope</span>}>
           <div className="row" style={{ gap: 14 }}><Ring value={used} color={SERIES[k]} label="Budget consumed" /><div className="small"><div>Approved <b>{fmtMoney(i.approved_budget, cur)}</b></div><div>Actual <b>{fmtMoney(i.actual, cur)}</b></div><div>Forecast demand <b>{fmtMoney(demand, cur)}</b></div><div className="muted">Capex {fmtMoney(i.capex, cur)} · Opex {fmtMoney(i.opex, cur)}</div></div></div>
           {i.envelope && <div style={{ marginTop: 10 }}><div className="row between tiny muted"><span>Demand vs envelope</span><span>{fmtPct((demand / i.envelope) * 100)}</span></div><Progress value={(demand / i.envelope) * 100} tone={demand > i.envelope ? 'crit' : 'brand'} label="Demand vs envelope" /></div>}
           <button className="btn sm" style={{ marginTop: 10 }} onClick={() => nav(`/finance?pf=${i.id}`)}>Finance detail</button>
         </Card></div>); })}
       <div className="span-5"><ChartFrame title="Investment allocation" sub="Approved budget by portfolio" height={220} table={{ headers: ['Portfolio', 'Approved'], rows: alloc.map((a: any) => [a.name, a.value]) }}><Donut data={alloc} center={fmtMoney(alloc.reduce((a: number, b: any) => a + b.value, 0), cur)} sub="approved" fmt={(v) => fmtMoney(v, cur)} /></ChartFrame></div>
-      <div className="span-7"><ChartFrame title="Portfolio quadrant" sub="Alignment vs risk · size = BAC · colour = health" height={260} legend={['green', 'amber', 'red', 'unknown'].map((r) => ({ key: r, name: label(r), color: RAG_COLOR[r] }))}>
+      <div className="span-7"><ChartFrame title="Portfolio quadrant" sub="Alignment vs risk · size = BAC · colour = health" height={260} table={{ headers: ['Project', 'Strategic alignment', 'Delivery risk', 'BAC', 'Health'], rows: d.projects.filter((p: any) => p.strategic_score !== null).map((p: any) => [`${p.code} ${p.name}`, p.strategic_score, p.risk_score, p.bac === null ? null : fmtMoney(Number(p.bac), cur), label(p.overall)]) }} legend={['green', 'amber', 'red', 'unknown'].map((r) => ({ key: r, name: label(r), color: RAG_COLOR[r] }))}>
         <Bubble data={d.projects.filter((p: any) => p.strategic_score !== null).map((p: any) => ({ ...p, bac: Number(p.bac ?? 1) }))} x="strategic_score" y="risk_score" z="bac" xLabel="Strategic alignment" yLabel="Delivery risk" colorBy={(p) => RAG_COLOR[p.overall]} onClick={(p) => nav(`/projects/${p.id}`)} fmtZ={(v) => fmtMoney(v, cur)} />
       </ChartFrame></div>
     </div>}
@@ -107,7 +107,7 @@ function BusinessCases() {
       <Kpi label="IRR" value={ev.data.irr === null ? 'Undefined' : fmtPct(ev.data.irr * 100, 1)} />
       <Kpi label="Payback" value={ev.data.payback_years === null ? 'Not within horizon' : `${ev.data.payback_years} yrs`} />
       <Kpi label="ROI" value={fmtPct(ev.data.roi_pct, 1)} foot={`TCO ${fmtMoney(ev.data.business_case.total_cost_of_ownership)}`} />
-      <div className="span-12" style={{ gridColumn: '1 / -1' }}><ChartFrame title="Cash flows by year" height={200}><BarsChart data={(ev.data.business_case.cash_flows ?? []).map((v: number, i: number) => ({ year: `Y${i}`, v }))} x="year" series={[{ key: 'v', name: 'Net cash flow' }]} fmt={(v) => fmtMoney(v)} refLine={0} /></ChartFrame></div>
+      <div className="span-12" style={{ gridColumn: '1 / -1' }}><ChartFrame title="Cash flows by year" height={200} table={{ headers: ['Year', 'Net cash flow'], rows: (ev.data.business_case.cash_flows ?? []).map((v: number, i: number) => [`Y${i}`, fmtMoney(v)]) }}><BarsChart data={(ev.data.business_case.cash_flows ?? []).map((v: number, i: number) => ({ year: `Y${i}`, v }))} x="year" series={[{ key: 'v', name: 'Net cash flow' }]} fmt={(v) => fmtMoney(v)} refLine={0} /></ChartFrame></div>
     </div>)}</div>}
   </div>);
 }

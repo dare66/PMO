@@ -91,7 +91,7 @@ export function registerFrsRoutes(r: FastifyInstance) {
   r.get('/api/scoring-models/:id/criteria', async (req) => { const c = C(req); const m = await getRow(c, 'scoring_models', P(req).id); return (await pool.query(`SELECT criteria FROM scoring_models WHERE id=$1`, [m.id])).rows[0].criteria; });
   r.post('/api/scores', async (req, reply) => {
     const c = C(req);
-    const b = parse(z.object({ model_id: uuid, entity_type: z.enum(['requests', 'ideas', 'projects']), entity_id: uuid, values: z.record(z.number().min(0).max(10)), override_total: z.number().min(0).max(100).nullish(), override_reason: z.string().max(2000).nullish() }).strict(), req.body);
+    const b = parse(z.object({ model_id: uuid, entity_type: z.enum(['requests', 'ideas', 'projects']), entity_id: uuid, values: z.record(z.string(), z.number().min(0).max(10)), override_total: z.number().min(0).max(100).nullish(), override_reason: z.string().max(2000).nullish() }).strict(), req.body);
     requirePerm(c, `${b.entity_type}:write`);
     reply.status(201);
     return tx((db) => scoreEntity(db, c, b));
