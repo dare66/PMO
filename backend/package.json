@@ -11,7 +11,8 @@
     "migrate": "tsx src/migrate.ts",
     "seed": "tsx src/seed/run.ts",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "openapi": "tsx scripts/export-openapi.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.1.0",

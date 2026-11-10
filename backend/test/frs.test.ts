@@ -356,3 +356,85 @@ describe('Controlled document generation (FR-DOC-004..007/013/014, FR-BA-009, FR
     expect(ug.body.missing_fields).toContain('Screenshots');
   });
 });
+
+describe('Migration-002 capabilities (scenarios, RTM, tenders, policies, views, skills, requirement versions)', () => {
+  it('scenario evaluation flags unpriced items instead of treating them as zero cost', async () => {
+    const s = (await find('portfolio', 'investment_scenarios', {}))[0];
+    const r = await api('portfolio', 'GET', `/api/scenarios/${s.id}/evaluate`);
+    expect(r.status).toBe(200);
+    expect(r.body.unpriced_items).toBe(r.body.items.filter((i: any) => i.unpriced).length);
+    expect(typeof r.body.over_capacity).toBe('boolean');
+    for (const i of r.body.items.filter((x: any) => x.unpriced)) expect(i.within_funding).toBeNull();
+  });
+  it('tender award requires a justification when not top-ranked and passed due diligence; AI cannot award', async () => {
+    const t = (await find('procurement', 'tenders', {}))[0];
+    const ev = await api('procurement', 'GET', `/api/tenders/${t.id}/evaluate`);
+    expect(ev.body.criteria_valid).toBe(true);
+    const other = ev.body.bids.find((b: any) => b.total !== null && b.vendor_id !== ev.body.recommended?.vendor_id);
+    expect(other).toBeTruthy();
+    const noJust = await api('procurement', 'POST', `/api/tenders/${t.id}/award`, { vendor_id: other.vendor_id });
+    expect(noJust.status).toBe(422); expect(noJust.body.message).toMatch(/justification/);
+    const dd = ev.body.bids.find((b: any) => b.due_diligence !== 'passed' && b.total !== null);
+    if (dd) { const r = await api('procurement', 'POST', `/api/tenders/${t.id}/award`, { vendor_id: dd.vendor_id, justification: 'Lower price' }); expect(r.status).toBe(422); expect(r.body.message).toMatch(/due diligence/); }
+    const { awardTender } = await import('../src/domain/extended.js');
+    await expect(tx(async (db) => awardTender(db, { ...(await ctxOf('procurement')), actorType: 'ai' }, t.id, ev.body.recommended.vendor_id, ''))).rejects.toThrow(/human/);
+  });
+  it('policy attestation is per person and version, once, and tracked', async () => {
+    const p = (await find('pm1', 'policies', { q: 'AI acceptable' }))[0];
+    expect((await api('pm1', 'POST', `/api/policies/${p.id}/attest`, {})).status).toBe(200);
+    expect((await api('pm1', 'POST', `/api/policies/${p.id}/attest`, {})).status).toBe(409);
+    const st = await api('security', 'GET', `/api/policies/${p.id}/attestations`);
+    expect(st.body.attested).toBeGreaterThanOrEqual(1); expect(st.body.required).toBeGreaterThanOrEqual(st.body.attested);
+    await expect(pool.query(`DELETE FROM policy_attestations WHERE policy_id=$1`, [p.id])).rejects.toThrow();
+  });
+  it('approved requirements re-version on change, return to review and keep immutable history', async () => {
+    const proj = byName(projects, 'Mobile App 3.0 Redesign');
+    const rq = await api('ba', 'POST', '/api/r/requirements', { name: 'Versioned requirement', context_type: 'project', context_id: proj.id, acceptance_criteria: 'Given x when y then z' });
+    const sub = await api('ba', 'POST', `/api/requirements/${rq.body.id}/submit`);
+    expect(sub.status).toBe(200);
+    expect((await api('ba', 'POST', `/api/approvals/${sub.body[0].id}/decide`, { decision: 'approved' })).status).toBe(403); // own request (SoD)
+    expect((await api('pm1', 'POST', `/api/approvals/${sub.body[0].id}/decide`, { decision: 'approved' })).status).toBe(200);
+    expect((await api('ba', 'GET', `/api/r/requirements/${rq.body.id}`)).body.status).toBe('approved');
+    const ed = await api('ba', 'PATCH', `/api/r/requirements/${rq.body.id}`, { description: 'Changed after approval' });
+    expect(ed.body.version).toBe(2); expect(ed.body.status).toBe('reviewed');
+    const v = await api('ba', 'GET', `/api/requirements/${rq.body.id}/versions`);
+    expect(v.body.length).toBe(1); expect(v.body[0].version).toBe(1);
+    await expect(pool.query(`UPDATE requirement_versions SET change_note='x' WHERE requirement_id=$1`, [rq.body.id])).rejects.toThrow();
+  });
+  it('RTM CSV export is checksummed and detects staleness', async () => {
+    const proj = byName(projects, 'Mobile App 3.0 Redesign');
+    const app = await getApp();
+    const tok = (await app.inject({ method: 'POST', url: '/api/auth/login', payload: { email: 'ba@demo.example', password: PASSWORD } })).json().token;
+    const r = await app.inject({ method: 'GET', url: `/api/traceability/project/${proj.id}/export.csv`, headers: { authorization: `Bearer ${tok}` } });
+    expect(r.statusCode).toBe(200); expect(r.body.startsWith('Requirement,')).toBe(true);
+    expect(r.headers['x-export-sha256']).toMatch(/^[0-9a-f]{64}$/);
+    const id = r.headers['x-export-id'] as string;
+    expect((await api('ba', 'GET', `/api/exports/${id}/stale`)).body.stale).toBe(false);
+    await api('ba', 'POST', '/api/r/requirements', { name: 'Makes export stale', context_type: 'project', context_id: proj.id });
+    expect((await api('ba', 'GET', `/api/exports/${id}/stale`)).body.stale).toBe(true);
+  });
+  it('saved views are personal unless shared', async () => {
+    await api('pm1', 'POST', '/api/views', { resource: 'risks', name: 'My high risks', filters: { status: 'open' }, shared: false });
+    await api('pm1', 'POST', '/api/views', { resource: 'risks', name: 'Team high risks', filters: { status: 'open' }, shared: true });
+    const other = (await api('pm2', 'GET', '/api/views?resource=risks')).body.map((v: any) => v.name);
+    expect(other).toContain('Team high risks'); expect(other).not.toContain('My high risks');
+  });
+  it('skills matching ranks candidates by proficiency and free capacity and reports gaps', async () => {
+    const sr = (await find('resources', 'skill_requirements', {}))[0];
+    const m = await api('resources', 'GET', `/api/skills/requirements/${sr.id}/match`);
+    expect(m.status).toBe(200); expect(typeof m.body.gap).toBe('boolean');
+    const scores = m.body.candidates.map((c: any) => c.score);
+    expect([...scores].sort((a, b) => b - a)).toEqual(scores);
+  });
+});
+
+describe('API-first (architecture rule)', () => {
+  it('every registered /api route appears in the OpenAPI document', async () => {
+    const app = await getApp();
+    const { ROUTE_CATALOGUE } = await import('../src/openapi.js');
+    const doc = (await api('admin', 'GET', '/api/openapi.json')).body;
+    const missing = ROUTE_CATALOGUE.filter((r) => r.url.startsWith('/api/') && !['HEAD', 'OPTIONS'].includes(r.method))
+      .filter((r) => !doc.paths[r.url.replace(/:([A-Za-z_]+)/g, '{$1}')]?.[r.method.toLowerCase()]);
+    expect(app).toBeTruthy(); expect(ROUTE_CATALOGUE.length).toBeGreaterThan(100); expect(missing).toEqual([]);
+  });
+});

@@ -5,3 +5,4 @@ dist/
 coverage/
 docs/screenshots/*.tmp.png
 backups/
+__pycache__/

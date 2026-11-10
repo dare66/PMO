@@ -83,3 +83,35 @@ Organisation=`organisations`; Department=`departments`; User=`users`; Role/Permi
 - One active workflow instance per record (partial unique index).
 - `invoices (vendor_id, invoice_number)` unique; `impact_assessments (change_request_id, area)` unique.
 - `audit_events` UPDATE/DELETE blocked by trigger.
+
+## Migration 002 – extended capabilities
+`investment_scenarios`, `scenario_items`, `stakeholders`, `bc_exercises`, `skill_requirements`, `tenders`, `tender_bids`, `vendor_reviews`, `policies`, `policy_attestations` (immutable), `saved_views`, `requirement_versions` (immutable), `export_snapshots`, `ai_intakes`, `oidc_login_states`; columns `requirements.version/origin`, `users.oidc_subject`, `files.scan_*`, generated `document_versions.tsv` (GIN), `work_items.recurrence_parent_id/sla_breached`.
+
+## Migration 003 – FRS v1.1 gaps
+Standard business tables (org_id, code, status, owner, classification, audit fields, row_version, deleted_at): `requests`, `scoring_models`, `sprints`, `time_entries`, `raci_assignments`, `communications`, `announcements`, `quality_reviews`, `non_conformances`, `configuration_items`, `ocm_impacts`, `readiness_assessments`, `training_activities`, `contract_milestones`, `cutover_steps`, `tech_debt_items`, `lessons`, `product_roles`, `personas`, `hypotheses`, `launch_plans`, `product_metrics`, `pricing_plans`.
+
+History/link tables: `scores`, `project_baselines`, `bia_versions`, `roadmap_versions` (all **immutable** via `history_immutable()` trigger), `work_dependencies` (FS/SS/FF/SF, lag, no self-links), `holidays`, `comments`, `watchers`, `announcement_acks`, `document_acks`, `finance_periods`, `coi_declarations` (unique per tender+user), `metric_values` (unique per metric+period+segment).
+
+```mermaid
+erDiagram
+  REQUESTS }o--|| PROJECTS : converted_to
+  SCORING_MODELS ||--o{ SCORES : produces
+  PROJECTS ||--o{ PROJECT_BASELINES : versions
+  CHANGE_REQUESTS ||--o{ PROJECT_BASELINES : authorises
+  WORK_ITEMS ||--o{ WORK_DEPENDENCIES : predecessor
+  SPRINTS ||--o{ WORK_ITEMS : contains
+  WORK_ITEMS ||--o{ TIME_ENTRIES : logged
+  QUALITY_REVIEWS ||--o{ NON_CONFORMANCES : raises
+  RELEASES ||--o{ CUTOVER_STEPS : sequenced
+  CONTRACTS ||--o{ CONTRACT_MILESTONES : pays
+  TENDERS ||--o{ TENDER_BIDS : receives
+  TENDERS ||--o{ COI_DECLARATIONS : declared
+  BIA_ASSESSMENTS ||--o{ BIA_VERSIONS : approved_as
+  PRODUCTS ||--o{ PRODUCT_METRICS : measured_by
+  PRODUCT_METRICS ||--o{ METRIC_VALUES : series
+  PRODUCTS ||--o{ ROADMAP_VERSIONS : snapshots
+  PRODUCTS ||--o{ PRODUCT_ROLES : owned_by
+  ANNOUNCEMENTS ||--o{ ANNOUNCEMENT_ACKS : acknowledged
+```
+
+Key constraints: `cost_entries.entry_kind` adds `accrual`; reversals reference `reversal_of`; `scores` require `override_reason` when overridden; `time_entries.hours` 0 < h ≤ 24; readiness dimensions 1..5; `finance_periods` keyed by org + `YYYY-MM`.

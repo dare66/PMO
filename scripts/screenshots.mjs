@@ -14,9 +14,9 @@ const pages = [
   ['13-resilience', '/resilience', 'bcm'], ['14-bia-detail', 'BIA', 'bcm'], ['15-traceability', '/resilience#trace', 'bcm'], ['16-processes', '/processes', 'ba'],
   ['17-finance', '/finance', 'finance'], ['18-resources', '/resources', 'resources'], ['19-operations', '/operations', 'ops'],
   ['20-documents', '/documents', 'pmo'], ['21-governance', '/governance', 'finance'], ['22-ai', '/ai', 'pmo'], ['23-vendors', '/vendors', 'procurement'], ['24-admin', '/admin', 'admin'],
-  ['25-demand', '/demand', 'portfolio'], ['26-project-schedule', 'PROJECT:Mobile#schedule', 'pm1'], ['27-project-sprints', 'PROJECT:Mobile#board', 'pm1'],
-  ['28-project-raci', 'PROJECT:Mobile#people', 'pm1'], ['29-project-change-people', 'PROJECT#ocm', 'pm2'], ['30-project-quality', 'PROJECT:Mobile#scope', 'pm1'],
-  ['31-product-health', 'PRODUCT#health', 'product'], ['32-finance-periods', '/finance#periods', 'finance'], ['33-tenders', '/vendors#tenders', 'procurement'], ['34-admin-locale', '/admin#org', 'admin'],
+  ['26-demand', '/demand', 'portfolio'], ['27-project-schedule', 'PROJECT:Mobile#schedule', 'pm1'], ['28-project-sprints', 'PROJECT:Mobile#board', 'pm1'],
+  ['29-project-raci', 'PROJECT:Mobile#people', 'pm1'], ['30-project-change-people', 'PROJECT#ocm', 'pm2'], ['31-project-quality', 'PROJECT:Mobile#scope', 'pm1'],
+  ['32-product-health', 'PRODUCT#health', 'product'], ['33-finance-periods', '/finance#periods', 'finance'], ['34-tenders', '/vendors#tenders', 'procurement'], ['35-admin-locale', '/admin#org', 'admin'],
 ];
 const browser = await chromium.launch();
 const errors = [];

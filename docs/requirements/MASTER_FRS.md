@@ -9,23 +9,23 @@ _Generated from `requirements_source.py` – edit the source, not this file._
 | Module | Requirements | Implemented | Partial | Planned |
 |---|---|---|---|---|
 | Platform foundation | 10 | 10 | 0 | 0 |
-| Strategy & portfolio | 6 | 5 | 0 | 1 |
-| Programme & project management | 10 | 9 | 0 | 1 |
+| Strategy & portfolio | 6 | 6 | 0 | 0 |
+| Programme & project management | 10 | 10 | 0 | 0 |
 | Product management & discovery | 7 | 7 | 0 | 0 |
-| Business analysis & process | 4 | 2 | 1 | 1 |
-| BIA & operational resilience | 6 | 5 | 1 | 0 |
-| Work & operational management | 3 | 2 | 1 | 0 |
-| Resource & capacity | 3 | 2 | 1 | 0 |
+| Business analysis & process | 4 | 4 | 0 | 0 |
+| BIA & operational resilience | 6 | 6 | 0 | 0 |
+| Work & operational management | 3 | 3 | 0 | 0 |
+| Resource & capacity | 3 | 3 | 0 | 0 |
 | Financial & benefits | 6 | 6 | 0 | 0 |
 | RAID & change control | 4 | 4 | 0 | 0 |
 | Quality, release & transition | 4 | 4 | 0 | 0 |
-| Vendor, procurement & contract | 4 | 3 | 0 | 1 |
-| Governance, risk & compliance | 4 | 3 | 0 | 1 |
-| Documents & knowledge | 4 | 2 | 1 | 1 |
+| Vendor, procurement & contract | 4 | 4 | 0 | 0 |
+| Governance, risk & compliance | 4 | 4 | 0 | 0 |
+| Documents & knowledge | 4 | 4 | 0 | 0 |
 | AI-assisted decision intelligence | 5 | 4 | 0 | 1 |
-| Integration framework | 4 | 3 | 0 | 1 |
-| Reporting & executive intelligence | 4 | 3 | 1 | 0 |
-| Non-functional | 6 | 1 | 4 | 1 |
+| Integration framework | 4 | 3 | 1 | 0 |
+| Reporting & executive intelligence | 4 | 4 | 0 | 0 |
+| Non-functional | 6 | 1 | 5 | 0 |
 
 Total requirements: **94**. “Implemented” means code, API, UI and automated tests exist in this repository (see `tests` column); it does not mean production-accepted.
 
@@ -460,7 +460,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Compare funding options |
-| Description | Scenario sets that include/exclude candidate investments against envelopes and capacity. |
+| Description | Scenario sets that include/exclude candidate investments against envelopes and capacity. [Update 2026-11-10: Built: funding/capacity limits, unpriced items flagged (never zero). Sequencing what-if remains (FR-PORT-005 Partial).] |
 | User roles | Executive; Portfolio manager; PMO manager |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Portfolio planning |
@@ -478,10 +478,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned for Phase 3 |
 | Priority | Should |
 | Dependencies | FR-STR-004 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/scenarios/:id/evaluate |
+| Ui | Data browser → Investment scenarios |
+| Tests | frs: scenario evaluation (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -733,7 +733,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Engage the right people |
-| Description | Stakeholder register with influence/interest and communication plan. |
+| Description | Stakeholder register with influence/interest and communication plan. [Update 2026-11-10: Built with engagement current/desired, communication plan and acknowledged announcements.] |
 | User roles | Project manager; PMO manager; Sponsor; Team member |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Initiation |
@@ -751,10 +751,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 4 |
 | Priority | Should |
 | Dependencies | FR-PRJ-001 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/r/stakeholders, /api/r/communications, /api/announcements/* |
+| Ui | Project → People & change |
+| Tests | frs: announcements (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -1099,7 +1099,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Interoperate with BPM tools |
-| Description | Store BPMN XML; import/export with a BPMN modeller (bpmn-js candidate, licence to verify). |
+| Description | Store BPMN XML; import/export with a BPMN modeller (bpmn-js candidate, licence to verify). [Update 2026-11-10: Import/export of BPMN 2.0 XML with DTD/XXE guard; bpmn.io modeller not embedded (licence watermark condition).] |
 | User roles | Business analyst; Process owner |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Modelling |
@@ -1117,10 +1117,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 8 |
 | Priority | Could |
 | Dependencies | FR-BA-002 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/processes/:id/bpmn |
+| Ui | Processes → record |
+| Tests | frs: BPMN XXE (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -1129,7 +1129,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Prove coverage |
-| Description | Objective → requirement → work item → test case → execution → evidence → approval links held in the shared model. |
+| Description | Objective → requirement → work item → test case → execution → evidence → approval links held in the shared model. [Update 2026-11-10: Matrix with gaps, checksummed CSV snapshots and staleness detection.] |
 | User roles | Business analyst; Process owner |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Audit/UAT |
@@ -1147,10 +1147,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Test cases reference requirements; matrix export planned |
 | Priority | Must |
 | Dependencies | FR-BA-001 |
-| Implementation status | Partial |
-| Api | /api/r/* |
-| Ui | Requirements & quality tab |
-| Tests | TC-QRL-TRACE (manual / not yet automated) |
+| Implementation status | Implemented |
+| Api | /api/traceability/:type/:id (+ export.csv) |
+| Ui | Requirements & quality |
+| Tests | frs: RTM export (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -1312,7 +1312,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Prove recovery works |
-| Description | Exercise plans, scenarios, results and corrective actions linked to strategies. |
+| Description | Exercise plans, scenarios, results and corrective actions linked to strategies. [Update 2026-11-10: Exercises with scenario, achieved RTO/RPO, findings, corrective actions and evidence.] |
 | User roles | BC manager; Process owner; Operations |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Exercise cycle |
@@ -1330,9 +1330,9 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Strategy test date/result recorded today; full exercise module planned |
 | Priority | Should |
 | Dependencies | FR-BIA-003 |
-| Implementation status | Partial |
-| Api | /api/r/recovery_strategies |
-| Ui | Recovery tab |
+| Implementation status | Implemented |
+| Api | /api/r/bc_exercises |
+| Ui | Data browser → BC exercises |
 | Tests | - |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
@@ -1405,7 +1405,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Operational discipline |
-| Description | SLA due timestamp and recurrence rule (RFC 5545 subset) on work items; auto-generation of recurrences planned. |
+| Description | SLA due timestamp and recurrence rule (RFC 5545 subset) on work items; auto-generation of recurrences planned. [Update 2026-11-10: Recurrences spawn on completion; SLA breach flagged and notified by the escalation job.] |
 | User roles | Team member; Operations; Service owner |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Operations |
@@ -1423,10 +1423,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned: recurrence generator job |
 | Priority | Should |
 | Dependencies | FR-WRK-001 |
-| Implementation status | Partial |
+| Implementation status | Implemented |
 | Api | /api/r/work_items |
-| Ui | Operational work |
-| Tests | - |
+| Ui | Work item drawer |
+| Tests | frs: escalations (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -1498,7 +1498,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Staff work with the right skills |
-| Description | Skills and proficiency per user; skills-gap analysis vs demand planned. |
+| Description | Skills and proficiency per user; skills-gap analysis vs demand planned. [Update 2026-11-10: Ranked candidates by proficiency and free capacity; skills gap analysis.] |
 | User roles | Resource manager; Project manager |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Staffing |
@@ -1516,10 +1516,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 7 |
 | Priority | Could |
 | Dependencies | FR-RES-001 |
-| Implementation status | Partial |
-| Api | /api/r/skills |
-| Ui | Admin |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/skills/requirements/:id/match, /api/skills/gap |
+| Ui | Resources |
+| Tests | frs: skills matching (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2050,7 +2050,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Objective selection |
-| Description | Weighted tender scoring and periodic performance reviews. |
+| Description | Weighted tender scoring and periodic performance reviews. [Update 2026-11-10: Weighted criteria (sum 100), award rules, COI declarations, vendor reviews.] |
 | User roles | Procurement officer; Finance controller |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Tender |
@@ -2068,10 +2068,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 7 |
 | Priority | Could |
 | Dependencies | FR-VND-003 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/tenders/*, /api/r/vendor_reviews |
+| Ui | Vendors → Tenders & bids / Vendor reviews |
+| Tests | frs: tender award, COI (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2173,7 +2173,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Policy lifecycle |
-| Description | Policies with owners, review cycles and periodic attestations. |
+| Description | Policies with owners, review cycles and periodic attestations. [Update 2026-11-10: Per-version immutable attestations with role scoping and completion tracking.] |
 | User roles | Auditor; Security officer; PMO manager; Executive |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Policy cycle |
@@ -2191,10 +2191,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 8 |
 | Priority | Should |
 | Dependencies | FR-GOV-002 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/policies/* |
+| Ui | Data browser → Policies |
+| Tests | frs: policy attestation (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2266,7 +2266,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Evidence storage |
-| Description | Object/file storage with SHA-256, MIME validation and malware scanning status before release. |
+| Description | Object/file storage with SHA-256, MIME validation and malware scanning status before release. [Update 2026-11-10: Allow-list + magic bytes + SHA-256 + ClamAV (when configured) or builtin signatures; quarantine; integrity check on download.] |
 | User roles | All roles (per permission); Document owners |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Upload |
@@ -2284,10 +2284,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned Phase 8 (table exists) |
 | Priority | Should |
 | Dependencies | FR-DOC-002 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/files |
+| Ui | Record drawer → Files |
+| Tests | frs: quarantine (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2296,7 +2296,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Operational knowledge |
-| Description | SOP and user-guide document types; full-text search planned (PostgreSQL FTS). |
+| Description | SOP and user-guide document types; full-text search planned (PostgreSQL FTS). [Update 2026-11-10: Generators from approved process data; full-text index on document versions. OCR deferred.] |
 | User roles | All roles (per permission); Document owners |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | Authoring |
@@ -2314,10 +2314,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | SOP stored as approved document version |
 | Priority | Should |
 | Dependencies | FR-DOC-002 |
-| Implementation status | Partial |
-| Api | /api/r/documents |
-| Ui | Documents |
-| Tests | - |
+| Implementation status | Implemented |
+| Api | /api/documents/generate (sop, user_guide, process_flow), /api/search |
+| Ui | Processes → record actions |
+| Tests | frs: generators (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2572,7 +2572,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Enterprise identity & collaboration |
-| Description | OIDC SSO, SCIM provisioning, Teams/Outlook notifications via Graph. |
+| Description | OIDC SSO, SCIM provisioning, Teams/Outlook notifications via Graph. [Update 2026-11-10: OIDC SSO (PKCE, nonce, JWKS, JIT, domain allow-list) built and env-configured; SCIM provisioning and Graph notifications remain planned. Not tested against a live IdP in this session.] |
 | User roles | Administrator; Integration service account |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | - |
@@ -2590,9 +2590,9 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Planned – requires approved tenant (DEC-03) |
 | Priority | Must |
 | Dependencies | FR-PLT-001 |
-| Implementation status | Planned |
-| Api | - |
-| Ui | - |
+| Implementation status | Partial |
+| Api | /api/auth/sso/* |
+| Ui | Login → Sign in with single sign-on |
 | Tests | - |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
@@ -2695,7 +2695,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Personal productivity |
-| Description | Saved status/sort per table (local); CSV/XLSX export and scheduled reports planned. |
+| Description | Saved status/sort per table (local); CSV/XLSX export and scheduled reports planned. [Update 2026-11-10: Shared/personal saved views and permission-aware CSV export with formula-injection guard. Scheduled reports remain planned.] |
 | User roles | Executive; PMO; Portfolio manager |
 | Preconditions | User authenticated with required permission; parent records exist in the same organisation |
 | Trigger | - |
@@ -2713,10 +2713,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Saved filter persists per browser |
 | Priority | Should |
 | Dependencies | FR-RPT-001 |
-| Implementation status | Partial |
-| Api | - |
+| Implementation status | Implemented |
+| Api | /api/views, /api/r/:key/export.csv |
 | Ui | Tables |
-| Tests | - |
+| Tests | frs: saved views (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2758,7 +2758,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Inclusive use |
-| Description | Keyboard navigation, visible focus, labels, contrast, reduced motion, 24px targets, drag alternatives, chart tables. |
+| Description | Keyboard navigation, visible focus, labels, contrast, reduced motion, 24px targets, drag alternatives, chart tables. [Update 2026-11-10: axe-core: 0 violations across 58 page states (light+dark). Formal manual assessment still required.] |
 | User roles | All |
 | Preconditions | n/a |
 | Trigger | - |
@@ -2778,8 +2778,8 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Dependencies | - |
 | Implementation status | Partial |
 | Api | - |
-| Ui | - |
-| Tests | TC-A11Y (manual / not yet automated) |
+| Ui | All |
+| Tests | scripts/a11y.mjs (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2788,7 +2788,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Responsive at enterprise scale |
-| Description | p95 API < 500ms for lists up to 500 rows; dashboard < 2s at 1k projects; indexes on context and status. |
+| Description | p95 API < 500ms for lists up to 500 rows; dashboard < 2s at 1k projects; indexes on context and status. [Update 2026-11-10: Local autocannon: p99 75–257 ms at 20 connections. Target-environment load test still required.] |
 | User roles | All |
 | Preconditions | n/a |
 | Trigger | - |
@@ -2806,10 +2806,10 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Acceptance criteria | Load test planned Phase 11 |
 | Priority | Should |
 | Dependencies | - |
-| Implementation status | Planned |
+| Implementation status | Partial |
 | Api | - |
 | Ui | - |
-| Tests | - |
+| Tests | load test (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 
@@ -2818,7 +2818,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Attribute | Specification |
 |---|---|
 | Business objective | Platform resilience |
-| Description | Daily PostgreSQL backups, tested restore, documented RTO 4h/RPO 24h for the platform itself. |
+| Description | Daily PostgreSQL backups, tested restore, documented RTO 4h/RPO 24h for the platform itself. [Update 2026-11-10: Backup/restore scripts and a passing drill (row counts + audit chain head). Off-host encrypted storage and agreed RTO/RPO pending.] |
 | User roles | All |
 | Preconditions | n/a |
 | Trigger | - |
@@ -2839,7 +2839,7 @@ Total requirements: **94**. “Implemented” means code, API, UI and automated 
 | Implementation status | Partial |
 | Api | - |
 | Ui | - |
-| Tests | - |
+| Tests | restore drill (manual / not yet automated) |
 | Baseline id | Pending FRS v1.1 import |
 | Baseline classification | New (gap-derived) – reconcile on import |
 

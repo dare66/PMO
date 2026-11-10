@@ -27,7 +27,7 @@ import { analyse, ask } from './ai/assistant.js';
 import { providerStatus } from './ai/providers.js';
 import { CONNECTORS, enqueue, inbound, processQueue, retryDeadLetter } from './integrations/framework.js';
 import { runDailyChecks } from './jobs.js';
-import { buildOpenApi } from './openapi.js';
+import { buildOpenApi, ROUTE_CATALOGUE } from './openapi.js';
 import multipart from '@fastify/multipart';
 import { registerExtendedRoutes } from './routes/extended.js';
 import { registerFrsRoutes } from './routes/frs.js';
@@ -42,6 +42,7 @@ const parse = <T extends z.ZodTypeAny>(s: T, v: unknown): z.infer<T> => {
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: process.env.NODE_ENV === 'test' ? false : { level: process.env.LOG_LEVEL ?? 'info', redact: ['req.headers.authorization', 'req.headers.cookie'] }, bodyLimit: 2 * 1024 * 1024, trustProxy: true });
+  app.addHook('onRoute', (r) => { for (const m of [r.method].flat()) if (!ROUTE_CATALOGUE.some((x) => x.method === m && x.url === r.url)) ROUTE_CATALOGUE.push({ method: m, url: r.url }); });
 
   await app.register(helmet, { contentSecurityPolicy: false });
   if (config.corsOrigin) await app.register(cors, { origin: config.corsOrigin.split(','), credentials: true });

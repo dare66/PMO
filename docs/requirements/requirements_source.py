@@ -150,6 +150,34 @@ R = [
  ('NFR','006','Responsive & mobile','Approvals on the go','Desktop-first, usable on tablet/phone for approvals, notifications, status and tasks.','-','-','-','-','No horizontal overflow at 390px','Should','-','Implemented','-','All','TC-UX-MOB'),
 ]
 
+# ---------------- status updates after the FRS v1.1 build (2026-11-10). Original rows above are kept unchanged for history.
+# id: (status, api, ui, tests, note appended to the description)
+UPDATES = {
+ 'STR-005': ('Implemented', '/api/scenarios/:id/evaluate', 'Data browser → Investment scenarios', 'frs: scenario evaluation', 'Built: funding/capacity limits, unpriced items flagged (never zero). Sequencing what-if remains (FR-PORT-005 Partial).'),
+ 'PRJ-008': ('Implemented', '/api/r/stakeholders, /api/r/communications, /api/announcements/*', 'Project → People & change', 'frs: announcements', 'Built with engagement current/desired, communication plan and acknowledged announcements.'),
+ 'BA-003': ('Implemented', '/api/processes/:id/bpmn', 'Processes → record', 'frs: BPMN XXE', 'Import/export of BPMN 2.0 XML with DTD/XXE guard; bpmn.io modeller not embedded (licence watermark condition).'),
+ 'BA-004': ('Implemented', '/api/traceability/:type/:id (+ export.csv)', 'Requirements & quality', 'frs: RTM export', 'Matrix with gaps, checksummed CSV snapshots and staleness detection.'),
+ 'BIA-006': ('Implemented', '/api/r/bc_exercises', 'Data browser → BC exercises', '-', 'Exercises with scenario, achieved RTO/RPO, findings, corrective actions and evidence.'),
+ 'WRK-003': ('Implemented', '/api/r/work_items', 'Work item drawer', 'frs: escalations', 'Recurrences spawn on completion; SLA breach flagged and notified by the escalation job.'),
+ 'RES-003': ('Implemented', '/api/skills/requirements/:id/match, /api/skills/gap', 'Resources', 'frs: skills matching', 'Ranked candidates by proficiency and free capacity; skills gap analysis.'),
+ 'VND-004': ('Implemented', '/api/tenders/*, /api/r/vendor_reviews', 'Vendors → Tenders & bids / Vendor reviews', 'frs: tender award, COI', 'Weighted criteria (sum 100), award rules, COI declarations, vendor reviews.'),
+ 'GOV-004': ('Implemented', '/api/policies/*', 'Data browser → Policies', 'frs: policy attestation', 'Per-version immutable attestations with role scoping and completion tracking.'),
+ 'DOC-003': ('Implemented', '/api/files', 'Record drawer → Files', 'frs: quarantine', 'Allow-list + magic bytes + SHA-256 + ClamAV (when configured) or builtin signatures; quarantine; integrity check on download.'),
+ 'DOC-004': ('Implemented', '/api/documents/generate (sop, user_guide, process_flow), /api/search', 'Processes → record actions', 'frs: generators', 'Generators from approved process data; full-text index on document versions. OCR deferred.'),
+ 'INT-004': ('Partial', '/api/auth/sso/*', 'Login → Sign in with single sign-on', '-', 'OIDC SSO (PKCE, nonce, JWKS, JIT, domain allow-list) built and env-configured; SCIM provisioning and Graph notifications remain planned. Not tested against a live IdP in this session.'),
+ 'RPT-004': ('Implemented', '/api/views, /api/r/:key/export.csv', 'Tables', 'frs: saved views', 'Shared/personal saved views and permission-aware CSV export with formula-injection guard. Scheduled reports remain planned.'),
+ 'NFR-002': ('Partial', '-', 'All', 'scripts/a11y.mjs', 'axe-core: 0 violations across 58 page states (light+dark). Formal manual assessment still required.'),
+ 'NFR-003': ('Partial', '-', '-', 'load test', 'Local autocannon: p99 75–257 ms at 20 connections. Target-environment load test still required.'),
+ 'NFR-004': ('Partial', '-', '-', 'restore drill', 'Backup/restore scripts and a passing drill (row counts + audit chain head). Off-host encrypted storage and agreed RTO/RPO pending.'),
+}
+def _apply(r):
+    u = UPDATES.get(f"{r[0]}-{r[1]}")
+    if not u: return r
+    r = list(r); r[12], r[13], r[14], r[15] = u[0], u[1], u[2], u[3]; r[4] = f"{r[4]} [Update 2026-11-10: {u[4]}]"
+    return tuple(r)
+R = [_apply(r) for r in R]
+
+
 FIELDS = ['id', 'module', 'title', 'business_objective', 'description', 'user_roles', 'preconditions', 'trigger', 'main_workflow', 'alternative_workflow', 'business_rules', 'data_fields', 'validations', 'permissions', 'notifications', 'audit', 'reports_dashboard_impact', 'integration', 'error_scenarios', 'acceptance_criteria', 'priority', 'dependencies', 'implementation_status', 'api', 'ui', 'tests', 'baseline_id', 'baseline_classification']
 
 # Test IDs that are backed by automated tests in backend/test (see docs/testing/TEST_PLAN.md)
