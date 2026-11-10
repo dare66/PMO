@@ -4,11 +4,29 @@ A unified, governed platform from strategy to service: portfolios, programmes, p
 
 ![Command centre](docs/screenshots/01-command-centre.jpg)
 
-## Run it (Docker)
+## Run it locally (Docker)
+**Needs:** Docker Desktop (Windows/macOS) or Docker Engine with the Compose plugin (Linux), about 2 GB free disk, and internet access for the first build.
+
 ```bash
-./start.sh
+git clone -b claude/wonderful-einstein-own7ir https://github.com/dare66/PMO.git
+cd PMO
+./start.sh                                   # macOS / Linux / WSL
 ```
-Then open http://localhost:8080. The first run writes `.env` with random secrets and (by default) loads a **synthetic** demo organisation; the demo password is printed. Sign in as e.g. `ceo@demo.example`, `pmo@demo.example`, `product@demo.example`, `bcm@demo.example`, `finance@demo.example` or `admin@demo.example`. For production settings see `docs/deployment/DEPLOYMENT.md`.
+On Windows PowerShell use `powershell -ExecutionPolicy Bypass -File .\start.ps1` instead.
+
+The first run creates `.env` with random secrets, builds the images (a few minutes), starts PostgreSQL + API + web, and loads a **synthetic** demo organisation. Open **http://localhost:8080** and sign in as `ceo@demo.example`, `pmo@demo.example`, `pm1@demo.example`, `product@demo.example`, `bcm@demo.example`, `finance@demo.example` or `admin@demo.example` with the demo password the script prints (also in `.env` as `DEMO_PASSWORD`).
+
+| Task | Command |
+|---|---|
+| Stop (keep data) | `docker compose down` |
+| Start again | `docker compose up -d` |
+| Reset everything (deletes data) | `docker compose down -v` then `./start.sh` |
+| Logs | `docker compose logs -f api` |
+| Port 8080 busy | set `WEB_PORT=8090` in `.env`, then `docker compose up -d` |
+| Behind a corporate proxy with its own CA | `docker build --secret id=npm_ca,src=/path/ca.pem …` (see Dockerfiles) |
+| Backup / restore | `scripts/backup.sh`, `scripts/restore.sh` |
+
+For production settings (no demo data, first admin, HTTPS) see `docs/deployment/DEPLOYMENT.md`.
 
 ## What's inside
 | Path | Contents |
